@@ -3,129 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小兔與浣熊的數學大廳</title>
+    <title>數學探索大廳</title>
     <style>
         :root {
-            --bg-color: #FFF9E3; /* 溫暖淡黃色背景 */
-            --card-color: #FFFFFF;
-            --accent-yellow: #FFD966;
+            --bg-yellow: #FFF9E3;
+            --card-white: #FFFFFF;
             --text-brown: #5D4037;
             --btn-green: #A8D08D;
+            --accent-orange: #FFAB91;
         }
         body {
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--bg-yellow);
             color: var(--text-brown);
             margin: 0;
-            padding: 40px 20px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        h1 {
-            font-size: 2.5rem;
-            color: #8D6E63;
-            margin-bottom: 10px;
-        }
-        .lobby-container {
+        header { text-align: center; margin: 40px 0; }
+        h1 { font-size: 2rem; color: #8D6E63; }
+        
+        .lobby-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 900px;
         }
         .unit-card {
-            background: var(--card-color);
-            border-radius: 25px;
-            padding: 30px;
+            background: var(--card-white);
+            border-radius: 20px;
+            padding: 25px;
             text-align: center;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 3px solid transparent;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 2px solid #F0E5CF;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
-        .unit-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-yellow);
-            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
-        }
-        .icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-        }
-        h2 {
-            margin: 10px 0;
-            font-size: 1.5rem;
-        }
-        p {
-            color: #795548;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
+        .icon { font-size: 50px; margin-bottom: 10px; }
+        h2 { margin: 10px 0; color: #6D4C41; }
+        p { font-size: 1rem; color: #8D6E63; margin-bottom: 20px; }
+        
         .enter-btn {
             background-color: var(--btn-green);
             color: white;
             text-decoration: none;
-            padding: 12px 30px;
+            padding: 12px;
             border-radius: 50px;
             font-weight: bold;
-            font-size: 1.2rem;
-            transition: background 0.3s;
+            display: block;
+            transition: 0.3s;
         }
-        .enter-btn:hover {
-            background-color: #8EBC72;
-        }
-        footer {
-            margin-top: 60px;
-            font-size: 0.9rem;
-            color: #A1887F;
-        }
+        .enter-btn:hover { background-color: #8EBC72; transform: scale(1.05); }
     </style>
 </head>
 <body>
 
     <header>
         <h1>🌟 我們的數學探索大廳 🌟</h1>
-        <p>點選一個單元，開始今天的挑戰吧！</p>
+        <p>親愛的同學，今天要挑戰哪一個主題呢？</p>
     </header>
 
-  <div class="unit-card">
-    <div>
-        <div class="icon">🦊🐱</div>
-        <h2>速率：追趕問題</h2>
-        <p>幫助奇奇與妮妮算出追趕的距離，看看誰會先到終點呢？</p>
-    </div>
-    <a href="race/index.html" class="enter-btn">點我開始</a>
-</div>
-
-        <div class="unit-card" style="opacity: 0.7;">
+    <div class="lobby-grid">
+        <div class="unit-card">
             <div>
-                <div class="icon">📐</div>
-                <h2>圖形與面積</h2>
-                <p>（新單元製作中...敬請期待！）</p>
+                <div class="icon">🦊🐱</div>
+                <h2>速率：追趕問題</h2>
+                <p>觀察奇奇與妮妮的賽跑，學習如何計算追趕距離！</p>
             </div>
-            <a href="#" class="enter-btn" style="background-color: #ccc; pointer-events: none;">即將推出</a>
+            <a href="race.html" class="enter-btn">點我開始挑戰</a>
         </div>
 
-        <div class="unit-card" style="opacity: 0.7;">
+        <div class="unit-card" style="opacity: 0.6;">
             <div>
-                <div class="icon">🍰</div>
-                <h2>分數的運算</h2>
-                <p>（新單元製作中...敬請期待！）</p>
+                <div class="icon">🏠</div>
+                <h2>新單元</h2>
+                <p>老師正在努力製作中...</p>
             </div>
-            <a href="#" class="enter-btn" style="background-color: #ccc; pointer-events: none;">即將推出</a>
+            <a href="#" class="enter-btn" style="background-color: #ccc; pointer-events: none;">即將開放</a>
         </div>
     </div>
-
-    <footer>
-        <p>© 2026 特教教學資源中心 | 打造最溫馨的學習環境</p>
-    </footer>
 
 </body>
 </html>
