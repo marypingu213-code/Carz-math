@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學探索大廳</title>
+    <title>我們的數學探索大廳</title>
     <style>
         :root {
             --bg-yellow: #FFF9E3;
             --card-white: #FFFFFF;
             --text-brown: #5D4037;
             --btn-green: #A8D08D;
-            --accent-orange: #FFAB91;
         }
         body {
-            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-family: sans-serif;
             background-color: var(--bg-yellow);
             color: var(--text-brown);
             margin: 0;
@@ -21,11 +20,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
         }
         header { text-align: center; margin: 40px 0; }
-        h1 { font-size: 2rem; color: #8D6E63; }
-        
         .lobby-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -45,9 +41,6 @@
             justify-content: space-between;
         }
         .icon { font-size: 50px; margin-bottom: 10px; }
-        h2 { margin: 10px 0; color: #6D4C41; }
-        p { font-size: 1rem; color: #8D6E63; margin-bottom: 20px; }
-        
         .enter-btn {
             background-color: var(--btn-green);
             color: white;
@@ -56,16 +49,15 @@
             border-radius: 50px;
             font-weight: bold;
             display: block;
-            transition: 0.3s;
+            margin-top: 20px;
         }
-        .enter-btn:hover { background-color: #8EBC72; transform: scale(1.05); }
     </style>
 </head>
 <body>
 
     <header>
         <h1>🌟 我們的數學探索大廳 🌟</h1>
-        <p>親愛的同學，今天要挑戰哪一個主題呢？</p>
+        <p>今天要挑戰哪一個主題呢？</p>
     </header>
 
     <div class="lobby-grid">
@@ -73,27 +65,27 @@
             <div>
                 <div class="icon">🦊🐱</div>
                 <h2>速率：追趕問題</h2>
-                <p>觀察奇奇與妮妮的賽跑，學習如何計算追趕距離！</p>
+                <p>觀察奇奇與妮妮，學習計算追趕距離！</p>
             </div>
-            <a href="race/index.html" class="enter-btn">點我開始挑戰</a>
+            <a href="race/index.html" class="enter-btn">點我挑戰</a>
         </div>
 
         <div class="unit-card">
             <div>
                 <div class="icon">🚢🌊</div>
                 <h2>速率：流水問題</h2>
-                <p>體驗順流與逆流的不同，算出豪華號遊艇來回的時間！</p>
+                <p>體驗順流與逆流，算出遊艇的時間！</p>
             </div>
-            <a href="boat.html" class="enter-btn">點我開始挑戰</a>
+            <a href="boat.html" class="enter-btn">點我挑戰</a>
         </div>
 
-        <div class="unit-card" style="opacity: 0.6;">
+        <div class="unit-card">
             <div>
-                <div class="icon">🏠</div>
-                <h2>新單元</h2>
-                <p>老師正在努力製作中...</p>
+                <div class="icon">🐰🐢</div>
+                <h2>速率：相遇問題</h2>
+                <p>大家從兩地對跑，什麼時候會碰到呢？</p>
             </div>
-            <a href="#" class="enter-btn" style="background-color: #ccc; pointer-events: none;">即將開放</a>
+            <a href="meet.html" class="enter-btn">點我挑戰</a>
         </div>
     </div>
 
