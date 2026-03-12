@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數學實驗室：追趕大賽</title>
+    <style>
+        body { font-family: "PingFang TC", sans-serif; background: #eef2f7; padding: 10px; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; width: 95%; max-width: 1000px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-top: 10px; }
+        
+        /* 加大賽道，確保角色不會跑出視窗 */
+        .track-container { background: #333; height: 180px; border-radius: 15px; position: relative; margin: 20px 0; border: 5px solid #555; overflow: visible; width: 100%; box-sizing: border-box; }
+        .finish-line { position: absolute; left: 75%; top: 0; bottom: 0; width: 20px; background: repeating-linear-gradient(0deg, #fff, #fff 10px, #000 10px, #000 20px); z-index: 5; }
+        .finish-label { position: absolute; left: 74%; bottom: -30px; font-weight: bold; color: #d35400; font-size: 18px; }
+        
+        .runner { position: absolute; font-size: 50px; transition: left 1.5s cubic-bezier(0.25, 0.1, 0.25, 1); z-index: 10; display: flex; flex-direction: column; align-items: center; }
+        .runner span { font-size: 16px; color: white; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 5px; margin-top: -5px; }
+        #fox { top: 20px; left: 0; }
+        #cat { top: 95px; left: 0; }
+
+        .step-box { display: none; background: #fffdf0; border: 3px solid #f1c40f; border-radius: 15px; padding: 20px; margin-top: 35px; }
+        .active { display: block; }
+        .instruction { font-size: 20px; margin-bottom: 15px; line-height: 1.6; }
+        .math-input { font-size: 24px; width: 100px; text-align: center; border: 2px solid #f1c40f; border-radius: 10px; padding: 5px; }
+        
+        button { background: #27ae60; color: white; border: none; padding: 15px 30px; border-radius: 40px; font-size: 20px; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .result-msg { font-size: 22px; font-weight: bold; text-align: center; margin-top: 20px; display: none; color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 style="text-align:center; margin: 10px 0;">📏 追趕問題：實況模擬教室</h2>
+    
+    <div class="track-container">
+        <div class="finish-line"></div>
+        <div id="fox" class="runner">🦊<span>奇奇 (400)</span></div>
+        <div id="cat" class="runner">🐱<span>妮妮 (320)</span></div>
+        <div class="finish-label">🏁 終點 4000m</div>
+    </div>
+
+    <div id="s1" class="step-box active">
+        <div class="instruction">
+            <b>1. 奇奇讓妮妮先騎 960 公尺：</b><br>
+            點擊按鈕，看妮妮出發到領先位置。
+        </div>
+        <button onclick="goStep1()" id="btn1">妮妮出發！</button>
+    </div>
+
+    <div id="s2" class="step-box">
+        <div class="instruction">
+            <b>2. 算出要追上的時間：</b><br>
+            妮妮領先 960m ÷ 速度差 80m/分 = 
+            <input type="number" id="ans2" class="math-input" placeholder="?"> 分鐘
+            <button onclick="goStep2()">看妮妮這段時間騎到哪</button>
+        </div>
+        <p style="color: #666;">💡 提示：算算看妮妮這 12 分鐘會不會過終點？</p>
+    </div>
+
+    <div id="s3" class="step-box">
+        <div class="instruction">
+            <b>3. 奇奇要在哪裡才追得上？</b><br>
+            妮妮總距離：960 + (320 × 12) = 
+            <input type="number" id="ans3" class="math-input" placeholder="?"> 公尺
+            <button onclick="goStep3()">奇奇加速追趕！</button>
+        </div>
+    </div>
+
+    <div id="final-msg" class="result-msg">
+        🚩 發現了嗎？奇奇追到妮妮時，<br>兩個人都已經超過終點線了！所以「追不上」。
+        <br><button onclick="location.reload()" style="background:#95a5a6; margin-top:15px;">重新示範</button>
+    </div>
+</div>
+
+<script>
+    // 設置比例尺：賽道寬度的 75% 代表 4000m
+    const trackElement = document.querySelector('.track-container');
+    const getScale = () => (trackElement.clientWidth * 0.75) / 4000;
+
+    function goStep1() {
+        const scale = getScale();
+        document.getElementById('cat').style.left = (960 * scale) + "px";
+        document.getElementById('btn1').disabled = true;
+        setTimeout(() => {
+            document.getElementById('s1').style.opacity = "0.5";
+            document.getElementById('s2').classList.add('active');
+        }, 1500);
+    }
+
+    function goStep2() {
+        const val = document.getElementById('ans2').value;
+        if(val == 12) {
+            const scale = getScale();
+            // 妮妮移動到 4800m 的位置 (會超過終點線)
+            document.getElementById('cat').style.left = (4800 * scale) + "px";
+            setTimeout(() => {
+                document.getElementById('s2').style.opacity = "0.5";
+                document.getElementById('s3').classList.add('active');
+            }, 1500);
+        } else {
+            alert("再算算看，960 ÷ 80 是多少？");
+        }
+    }
+
+    function goStep3() {
+        const val = document.getElementById('ans3').value;
+        if(val == 4800) {
+            const scale = getScale();
+            // 奇奇移動到 4800m 的位置，跟妮妮重合
+            document.getElementById('fox').style.left = (4800 * scale) + "px";
+            setTimeout(() => {
+                document.getElementById('s3').style.opacity = "0.5";
+                document.getElementById('final-msg').style.display = "block";
+            }, 1500);
+        } else {
+            alert("算算看，960 + 3840 等於多少？");
+        }
+    }
+</script>
+
+</body>
+</html>
