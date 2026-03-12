@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>速率教學：追趕大賽</title>
+    <style>
+        /* 讓整個畫面固定，禁止捲動 */
+        html, body { 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background: #FFF9E3; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card { 
+            background: white; 
+            width: 95vw; 
+            height: 90vh; /* 高度固定在螢幕的 90% */
+            padding: 20px; 
+            border-radius: 20px; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1); 
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        h2 { margin: 0 0 10px 0; text-align: center; color: #8D6E63; font-size: 1.5rem; }
+
+        /* 賽道區域固定高度 */
+        .track { 
+            background: #333; 
+            flex: 0 0 180px; /* 固定高度，不隨內容擠壓 */
+            border-radius: 15px; 
+            position: relative; 
+            margin: 10px 0; 
+            border: 4px solid #555; 
+            overflow: visible; 
+        }
+
+        .finish-line { position: absolute; left: 75%; top: 0; bottom: 0; width: 15px; background: repeating-linear-gradient(0deg, #fff, #fff 10px, #000 10px, #000 20px); z-index: 5; }
+        .finish-label { position: absolute; left: 74%; bottom: -25px; font-weight: bold; color: #8D6E63; font-size: 1.2rem; }
+        
+        .runner { position: absolute; font-size: 50px; transition: left 1.5s ease-in-out; z-index: 10; display: flex; flex-direction: column; align-items: center; }
+        .runner span { font-size: 14px; color: white; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 3px; margin-top: -5px; white-space: nowrap; }
+        #fox { top: 15px; left: 0; }
+        #cat { top: 90px; left: 0; }
+
+        /* 互動區域自動填滿剩餘空間 */
+        .content-area {
+            flex: 1;
+            position: relative;
+            margin-top: 30px;
+        }
+
+        .step { 
+            display: none; 
+            background: #FFFDF0; 
+            border: 2px solid #FFD966; 
+            border-radius: 15px; 
+            padding: 15px;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .active { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+
+        .instruction { font-size: 1.2rem; margin-bottom: 15px; line-height: 1.5; }
+        input { font-size: 24px; width: 100px; text-align: center; border: 2px solid #FFD966; border-radius: 8px; padding: 5px; margin: 10px; }
+        button { background: #A8D08D; color: white; border: none; padding: 15px 30px; border-radius: 40px; font-size: 1.2rem; cursor: pointer; font-weight: bold; }
+        
+        .final-box { border-color: #FFAB91; background: #FFF5F2; }
+        .back-home { margin-top: 15px; text-decoration: none; color: #8D6E63; font-weight: bold; border-bottom: 2px solid; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>🦊 追趕大賽實驗室</h2>
+    
+    <div class="track">
+        <div class="finish-line"></div>
+        <div id="fox" class="runner">🦊<span>奇奇</span></div>
+        <div id="cat" class="runner">🐱<span>妮妮</span></div>
+        <div class="finish-label">🏁 終點 4000m</div>
+    </div>
+
+    <div class="content-area">
+        <div id="s1" class="step active">
+            <div class="instruction"><b>1. 奇奇讓妮妮先騎 960 公尺：</b></div>
+            <button onclick="goStep1()">讓妮妮出發！</button>
+        </div>
+
+        <div id="s2" class="step">
+            <div class="instruction"><b>2. 要追上妮妮需要多久？</b><br>960m ÷ 速度差 80m/分 = </div>
+            <input type="number" id="ans2" placeholder="?">
+            <button onclick="goStep2()">看妮妮騎到哪</button>
+        </div>
+
+        <div id="s3" class="step">
+            <div class="instruction"><b>3. 追上的位置在哪裡？</b><br>960 + (320 × 12) = </div>
+            <input type="number" id="ans3" placeholder="?">
+            <button onclick="goStep3()">奇奇加速追趕！</button>
+        </div>
+
+        <div id="final" class="step final-box">
+            <h3>🚩 結果：追不上！</h3>
+            <p>在 4800m 處追上，但終點在 4000m。<br>妮妮早就已經過線囉！</p>
+            <a href="index.html" class="back-home">🏠 回到大廳</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 動態計算比例尺
+    const trackWidth = document.querySelector('.track').clientWidth;
+    const scale = (trackWidth * 0.75) / 4000;
+
+    function goStep1() {
+        document.getElementById('cat').style.left = (960 * scale) + "px";
+        setTimeout(() => {
+            document.getElementById('s1').classList.remove('active');
+            document.getElementById('s2').classList.add('active');
+        }, 1500);
+    }
+
+    function goStep2() {
+        if(document.getElementById('ans2').value == 12) {
+            document.getElementById('cat').style.left = (4800 * scale) + "px";
+            setTimeout(() => {
+                document.getElementById('s2').classList.remove('active');
+                document.getElementById('s3').classList.add('active');
+            }, 1500);
+        } else { alert("再算一次看看，960 ÷ 80 = ?"); }
+    }
+
+    function goStep3() {
+        if(document.getElementById('ans3').value == 4800) {
+            document.getElementById('fox').style.left = (4800 * scale) + "px";
+            setTimeout(() => {
+                document.getElementById('s3').classList.remove('active');
+                document.getElementById('final').classList.add('active');
+            }, 1500);
+        } else { alert("再算一次看看，960 + 3840 = ?"); }
+    }
+</script>
+
+</body>
+</html>
