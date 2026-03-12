@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>數學實驗室：豪華號流水問題</title>
+    <title>豪華號流水實驗室</title>
     <style>
+        /* 平板固定版面設定 */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #FFF9E3; display: flex; justify-content: center; align-items: center; }
-        .card { background: white; width: 95vw; height: 90vh; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; }
-        h2 { margin: 0 0 10px 0; text-align: center; color: #5D4037; }
-
+        .card { background: white; width: 95vw; height: 92vh; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; }
+        
         /* 河流區域 */
         .river-container { 
             background: #74b9ff; 
@@ -19,96 +19,77 @@
             border: 4px solid #0984e3; 
             overflow: hidden; 
         }
-        /* 動畫河水紋路 */
-        .waves {
+        
+        /* 水流箭頭動畫 */
+        .water-flow {
             position: absolute; width: 200%; height: 100%;
-            background: repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.3) 40px, rgba(255,255,255,0.3) 80px);
-            animation: flow 5s linear infinite;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path d="M10 50 L40 50 M30 40 L40 50 L30 60" stroke="white" stroke-width="3" fill="none" opacity="0.5"/></svg>');
+            animation: flowMove 3s linear infinite;
         }
-        @keyframes flow { from { left: 0; } to { left: -100px; } }
+        @keyframes flowMove { from { transform: translateX(0); } to { transform: translateX(-100px); } }
         
-        .boat { position: absolute; font-size: 60px; transition: all 2s ease-in-out; z-index: 10; top: 50px; left: 10%; }
-        .port { position: absolute; bottom: 10px; font-weight: bold; background: #ffeaa7; padding: 5px 10px; border-radius: 5px; }
-        
-        .content-area { flex: 1; margin-top: 20px; }
-        .step { display: none; background: #F0F7FF; border: 2px solid #74b9ff; border-radius: 15px; padding: 15px; height: 100%; box-sizing: border-box; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .boat { position: absolute; font-size: 65px; transition: all 2s ease-in-out; z-index: 10; top: 40px; left: 5%; }
+        .label { position: absolute; bottom: 10px; font-weight: bold; background: #ffeaa7; padding: 4px 12px; border-radius: 8px; font-size: 18px; }
+
+        /* 互動區域 */
+        .step-area { flex: 1; margin-top: 20px; position: relative; }
+        .step { display: none; background: #F0F7FF; border: 3px solid #74b9ff; border-radius: 15px; padding: 20px; height: 100%; box-sizing: border-box; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         .active { display: flex; }
 
-        .instruction { font-size: 1.2rem; margin-bottom: 10px; line-height: 1.5; }
-        input { font-size: 24px; width: 100px; text-align: center; border: 2px solid #74b9ff; border-radius: 8px; padding: 5px; margin: 10px; }
-        button { background: #0984e3; color: white; border: none; padding: 15px 30px; border-radius: 40px; font-size: 1.2rem; cursor: pointer; font-weight: bold; }
-        .back-home { margin-top: 15px; text-decoration: none; color: #5D4037; font-weight: bold; border-bottom: 2px solid; }
+        .title { font-size: 22px; margin-bottom: 15px; font-weight: bold; color: #2d3436; }
+        input { font-size: 28px; width: 120px; text-align: center; border: 3px solid #74b9ff; border-radius: 10px; padding: 8px; margin: 10px; }
+        button { background: #0984e3; color: white; border: none; padding: 15px 35px; border-radius: 50px; font-size: 20px; cursor: pointer; font-weight: bold; }
+        .back-home { margin-top: 20px; text-decoration: none; color: #5D4037; font-weight: bold; font-size: 18px; border-bottom: 2px solid; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>🚢 豪華號流水實驗室</h2>
+    <h2 style="text-align:center; color:#5D4037; margin-bottom:10px;">🚢 豪華號流水實驗室</h2>
     
     <div class="river-container">
-        <div class="waves" id="waterFlow"></div>
-        <div id="portA" class="port" style="left: 5%;">甲地</div>
-        <div id="portB" class="port" style="right: 5%;">乙地</div>
+        <div class="water-flow"></div>
+        <div class="label" style="left: 5%;">甲地</div>
+        <div class="label" style="right: 5%;">乙地</div>
         <div id="boat" class="boat">🚢</div>
     </div>
 
-    <div class="content-area">
+    <div class="step-area">
         <div id="s1" class="step active">
-            <div class="instruction"><b>1. 順流而下：</b><br>船速 15 + 水速 3 = 順流速是多少？</div>
-            <input type="number" id="ans1" placeholder="?"> 公里/時
-            <button onclick="goStep1()">出發去乙地！</button>
+            <div class="title">1. 順流而下 (水在推你)</div>
+            <p>船速 15 + 水速 3 = 順流時速幾公里？</p>
+            <input type="number" id="ans1" placeholder="?">
+            <button onclick="check1()">出發去乙地！</button>
         </div>
 
         <div id="s2" class="step">
-            <div class="instruction"><b>2. 算出兩地距離：</b><br>順流時速 18 公里 × 4 小時 = </div>
-            <input type="number" id="ans2" placeholder="?"> 公里
-            <button onclick="goStep2()">確認距離</button>
+            <div class="title">2. 算出甲、乙兩地的距離</div>
+            <p>順流時速 18 × 4 小時 = 幾公里？</p>
+            <input type="number" id="ans2" placeholder="?">
+            <button onclick="check2()">確認距離</button>
         </div>
 
         <div id="s3" class="step">
-            <div class="instruction"><b>3. 逆流返回：</b><br>距離 72 公里 ÷ 逆流時速 (15-3=12) = </div>
-            <input type="number" id="ans3" placeholder="?"> 小時
-            <button onclick="goStep3()">回甲地要多久？</button>
+            <div class="title">3. 逆流返回 (水在擋你)</div>
+            <p>距離 72 ÷ 逆流時速 (15-3=12) = 幾小時？</p>
+            <input type="number" id="ans3" placeholder="?">
+            <button onclick="check3()">算算回程時間</button>
         </div>
 
         <div id="final" class="step" style="background: #E8F8F5; border-color: #2ECC71;">
-            <h3>✅ 完成挑戰！</h3>
-            <p>順流時因為有水幫忙，船開得比較快。<br>逆流時水在擋你，所以要花更多時間 (6小時)！</p>
+            <div class="title" style="color:#27ae60;">✅ 挑戰成功！</div>
+            <p>順流比較快 (18km/h)，逆流比較慢 (12km/h)。<br>所以回程花了更長的時間 (6小時)！</p>
             <a href="index.html" class="back-home">🏠 回到大廳</a>
         </div>
     </div>
 </div>
 
 <script>
-    function goStep1() {
+    function check1() {
         if(document.getElementById('ans1').value == 18) {
-            document.getElementById('boat').style.left = "80%";
+            document.getElementById('boat').style.left = "78%";
             setTimeout(() => {
                 document.getElementById('s1').classList.remove('active');
                 document.getElementById('s2').classList.add('active');
             }, 2000);
-        } else { alert("順流要相加喔：15 + 3 = ?"); }
-    }
-
-    function goStep2() {
-        if(document.getElementById('ans2').value == 72) {
-            document.getElementById('s2').classList.remove('active');
-            document.getElementById('s3').classList.add('active');
-            // 讓船頭轉向準備逆流
-            document.getElementById('boat').style.transform = "scaleX(-1)";
-        } else { alert("算算看 18 × 4 是多少？"); }
-    }
-
-    function goStep3() {
-        if(document.getElementById('ans3').value == 6) {
-            document.getElementById('boat').style.left = "10%";
-            setTimeout(() => {
-                document.getElementById('s3').classList.remove('active');
-                document.getElementById('final').classList.add('active');
-            }, 2000);
-        } else { alert("算算看 72 ÷ 12 是多少？"); }
-    }
-</script>
-
-</body>
-</html>
+        } else
