@@ -2,67 +2,134 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>流水實驗室</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>流水實驗室：倍數線段版</title>
 <style>
-  body { font-family: sans-serif; background: #FFF9E3; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-  .card { background: white; width: 95vw; height: 90vh; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; }
-  .river { background: #74b9ff; height: 180px; border-radius: 15px; position: relative; margin: 10px 0; border: 4px solid #0984e3; overflow: hidden; }
-  .boat { position: absolute; font-size: 60px; transition: all 2s ease-in-out; top: 40px; left: 5%; }
-  .label { position: absolute; bottom: 10px; font-weight: bold; background: #ffeaa7; padding: 5px 10px; border-radius: 8px; }
-  .step { display: none; background: #F0F7FF; border: 2px solid #74b9ff; border-radius: 15px; padding: 20px; flex: 1; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 10px; }
+  html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #FFF9E3; display: flex; justify-content: center; align-items: center; }
+  .card { background: white; width: 95vw; height: 92vh; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; }
+  
+  /* 河流與跑道區域 */
+  .river { background: #74b9ff; flex: 0 0 220px; border-radius: 15px; position: relative; margin: 10px 0; border: 4px solid #0984e3; overflow: visible; }
+  .boat { position: absolute; font-size: 55px; transition: left 0.8s ease; top: 30px; left: 5%; z-index: 10; }
+  .label { position: absolute; bottom: 10px; font-weight: bold; background: #ffeaa7; padding: 4px 12px; border-radius: 8px; z-index: 5; }
+
+  /* 線段顯示區域 */
+  .segment-container { position: absolute; top: 110px; left: 10%; width: 75%; height: 40px; display: flex; align-items: center; }
+  .segment { height: 10px; background: #ff7675; border: 2px solid white; border-radius: 5px; width: 0; transition: width 0.5s ease; position: relative; display: flex; justify-content: center; }
+  .segment-text { position: absolute; top: 15px; font-size: 14px; font-weight: bold; color: white; display: none; }
+
+  /* 互動區域 */
+  .step-area { flex: 1; margin-top: 20px; position: relative; }
+  .step { display: none; background: #F0F7FF; border: 3px solid #74b9ff; border-radius: 15px; padding: 15px; height: 100%; box-sizing: border-box; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
   .active { display: flex; }
-  input { font-size: 24px; width: 100px; text-align: center; border: 2px solid #74b9ff; border-radius: 8px; padding: 5px; margin: 10px; }
-  button { background: #0984e3; color: white; border: none; padding: 12px 25px; border-radius: 30px; font-size: 18px; cursor: pointer; }
+
+  input { font-size: 28px; width: 120px; text-align: center; border: 3px solid #74b9ff; border-radius: 10px; padding: 8px; margin: 10px; }
+  button { background: #0984e3; color: white; border: none; padding: 15px 35px; border-radius: 50px; font-size: 20px; cursor: pointer; font-weight: bold; }
+  .highlight { color: #d63031; font-weight: bold; }
 </style>
 </head>
 <body>
+
 <div class="card">
-  <h2 style="text-align:center;">🚢 豪華號流水實驗室</h2>
+  <h2 style="text-align:center; color:#5D4037;">🚢 豪華號：線段量感教學</h2>
+  
   <div class="river">
+    <div id="boat" class="boat">🚢</div>
     <div class="label" style="left: 5%;">甲地</div>
     <div class="label" style="right: 5%;">乙地</div>
-    <div id="boat" class="boat">🚢</div>
+    
+    <div class="segment-container" id="road">
+      <div id="seg1" class="segment"><span class="segment-text">18km</span></div>
+      <div id="seg2" class="segment"><span class="segment-text">18km</span></div>
+      <div id="seg3" class="segment"><span class="segment-text">18km</span></div>
+      <div id="seg4" class="segment"><span class="segment-text">18km</span></div>
+    </div>
   </div>
-  <div id="s1" class="step active">
-    <h3>1. 順流而下</h3>
-    <p>15 + 3 = <input type="number" id="ans1"> (km/h)</p>
-    <button onclick="go1()">出發去乙地</button>
-  </div>
-  <div id="s2" class="step">
-    <h3>2. 兩地距離</h3>
-    <p>18 x 4 = <input type="number" id="ans2"> (km)</p>
-    <button onclick="go2()">確認距離</button>
-  </div>
-  <div id="s3" class="step">
-    <h3>3. 逆流返回</h3>
-    <p>72 ÷ (15-3) = <input type="number" id="ans3"> (小時)</p>
-    <button onclick="go3()">回甲地</button>
-  </div>
-  <div id="final" class="step" style="background: #E8F8F5;">
-    <h3>✅ 挑戰成功！</h3>
-    <a href="index.html" style="font-weight:bold; color:#5D4037;">🏠 回到大廳</a>
+
+  <div class="step-area">
+    <div id="s1" class="step active">
+      <div style="font-size:22px; font-weight:bold;">1. 算出順流時速</div>
+      <p>現在船停在甲地。順流時：船速 15 + 水速 3 = <br>
+      <input type="number" id="ans1"> 公里/時</p>
+      <button onclick="check1()">確認速度</button>
+    </div>
+
+    <div id="s2" class="step">
+      <div style="font-size:22px; font-weight:bold;">2. 航行 4 小時（有 4 個 18）</div>
+      <p>順流 18km/h，跑了 4 小時。<br>點擊按鈕，看船一段一段跑！</p>
+      <button onclick="startSailing()">開始航行！</button>
+    </div>
+
+    <div id="s3" class="step">
+      <div style="font-size:22px; font-weight:bold;">3. 填入總距離</div>
+      <p>剛才畫了 4 個 18，總共是多少公里？<br>
+      18 × 4 = <input type="number" id="ans2"> 公里</p>
+      <button onclick="check2()">正確！下一關</button>
+    </div>
+
+    <div id="s4" class="step">
+        <div style="font-size:22px; font-weight:bold;">4. 逆流返回</div>
+        <p>距離 72 ÷ 逆流速 (15-3=12) = <br>
+        <input type="number" id="ans3"> 小時</p>
+        <button onclick="check3()">看結果</button>
+    </div>
+
+    <div id="final" class="step" style="background:#E8F8F5;">
+      <h3>✅ 挑戰成功！</h3>
+      <p>看到 4 個 18 公里的線段了嗎？這就是總距離！</p>
+      <a href="index.html" style="font-weight:bold; color:#5D4037; text-decoration:none; border-bottom:2px solid;">🏠 回到大廳</a>
+    </div>
   </div>
 </div>
+
 <script>
-  function go1() {
+  function check1() {
     if(document.getElementById('ans1').value == 18) {
-      document.getElementById('boat').style.left = "80%";
-      setTimeout(() => { document.getElementById('s1').classList.remove('active'); document.getElementById('s2').classList.add('active'); }, 2000);
-    }
+      document.getElementById('s1').classList.remove('active');
+      document.getElementById('s2').classList.add('active');
+    } else { alert("順流要相加喔！"); }
   }
-  function go2() {
+
+  function startSailing() {
+    let currentSeg = 1;
+    const boat = document.getElementById('boat');
+    
+    const interval = setInterval(() => {
+      if(currentSeg <= 4) {
+        const seg = document.getElementById('seg' + currentSeg);
+        seg.style.width = "25%"; // 每一段佔 25%
+        seg.querySelector('.segment-text').style.display = "block";
+        
+        // 船移動到該段末端 (加上初始 5% 位址)
+        boat.style.left = (5 + (currentSeg * 18.75)) + "%"; 
+        
+        currentSeg++;
+      } else {
+        clearInterval(interval);
+        setTimeout(() => {
+          document.getElementById('s2').classList.remove('active');
+          document.getElementById('s3').classList.add('active');
+        }, 1000);
+      }
+    }, 1000); // 每一秒跑一段
+  }
+
+  function check2() {
     if(document.getElementById('ans2').value == 72) {
-      document.getElementById('s2').classList.remove('active'); document.getElementById('s3').classList.add('active');
+      document.getElementById('s3').classList.remove('active');
+      document.getElementById('s4').classList.add('active');
       document.getElementById('boat').style.transform = "scaleX(-1)";
     }
   }
-  function go3() {
+
+  function check3() {
     if(document.getElementById('ans3').value == 6) {
       document.getElementById('boat').style.left = "5%";
-      setTimeout(() => { document.getElementById('s3').classList.remove('active'); document.getElementById('final').classList.add('active'); }, 2000);
+      document.getElementById('s4').classList.remove('active');
+      document.getElementById('final').classList.add('active');
     }
   }
 </script>
+
 </body>
 </html>
