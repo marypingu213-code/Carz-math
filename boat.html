@@ -3,81 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>流水實驗室：倍數線段版</title>
+<title>流水實驗室：精準量感版</title>
 <style>
   html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #FFF9E3; display: flex; justify-content: center; align-items: center; }
   .card { background: white; width: 95vw; height: 92vh; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; }
   
-  /* 河流與跑道區域 */
   .river { background: #74b9ff; flex: 0 0 220px; border-radius: 15px; position: relative; margin: 10px 0; border: 4px solid #0984e3; overflow: visible; }
-  .boat { position: absolute; font-size: 55px; transition: left 0.8s ease; top: 30px; left: 5%; z-index: 10; }
+  .boat { position: absolute; font-size: 55px; transition: left 1s ease; top: 30px; left: 5%; z-index: 10; }
   .label { position: absolute; bottom: 10px; font-weight: bold; background: #ffeaa7; padding: 4px 12px; border-radius: 8px; z-index: 5; }
 
-  /* 線段顯示區域 */
-  .segment-container { position: absolute; top: 110px; left: 10%; width: 75%; height: 40px; display: flex; align-items: center; }
-  .segment { height: 10px; background: #ff7675; border: 2px solid white; border-radius: 5px; width: 0; transition: width 0.5s ease; position: relative; display: flex; justify-content: center; }
-  .segment-text { position: absolute; top: 15px; font-size: 14px; font-weight: bold; color: white; display: none; }
+  /* 線段區域 */
+  .segment-container { position: absolute; top: 115px; left: 7%; width: 83%; height: 40px; display: flex; align-items: center; }
+  .segment { height: 12px; background: #ff7675; border: 2px solid white; border-radius: 6px; width: 0; transition: width 0.5s ease; position: relative; display: flex; justify-content: center; margin-right: 2px; }
+  .full-line { height: 12px; background: #fdcb6e; border: 2px solid white; border-radius: 6px; width: 0; transition: width 0.8s ease; position: absolute; display: flex; justify-content: center; align-items: center; }
+  .segment-text { position: absolute; top: 18px; font-size: 14px; font-weight: bold; color: #555; display: none; }
 
-  /* 互動區域 */
   .step-area { flex: 1; margin-top: 20px; position: relative; }
   .step { display: none; background: #F0F7FF; border: 3px solid #74b9ff; border-radius: 15px; padding: 15px; height: 100%; box-sizing: border-box; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
   .active { display: flex; }
 
   input { font-size: 28px; width: 120px; text-align: center; border: 3px solid #74b9ff; border-radius: 10px; padding: 8px; margin: 10px; }
   button { background: #0984e3; color: white; border: none; padding: 15px 35px; border-radius: 50px; font-size: 20px; cursor: pointer; font-weight: bold; }
-  .highlight { color: #d63031; font-weight: bold; }
 </style>
 </head>
 <body>
 
 <div class="card">
-  <h2 style="text-align:center; color:#5D4037;">🚢 豪華號：線段量感教學</h2>
+  <h2 style="text-align:center; color:#5D4037;">🚢 豪華號：分段與總長教學</h2>
   
   <div class="river">
     <div id="boat" class="boat">🚢</div>
     <div class="label" style="left: 5%;">甲地</div>
-    <div class="label" style="right: 5%;">乙地</div>
+    <div class="label" id="portB" style="right: 5%;">乙地</div>
     
     <div class="segment-container" id="road">
       <div id="seg1" class="segment"><span class="segment-text">18km</span></div>
       <div id="seg2" class="segment"><span class="segment-text">18km</span></div>
       <div id="seg3" class="segment"><span class="segment-text">18km</span></div>
       <div id="seg4" class="segment"><span class="segment-text">18km</span></div>
+      <div id="fullSeg" class="full-line"><span id="fullText" class="segment-text" style="top:-25px; color:#d35400;">總距離 72km</span></div>
     </div>
   </div>
 
   <div class="step-area">
     <div id="s1" class="step active">
       <div style="font-size:22px; font-weight:bold;">1. 算出順流時速</div>
-      <p>現在船停在甲地。順流時：船速 15 + 水速 3 = <br>
-      <input type="number" id="ans1"> 公里/時</p>
+      <p>船速 15 + 水速 3 = <input type="number" id="ans1"> 公里/時</p>
       <button onclick="check1()">確認速度</button>
     </div>
 
     <div id="s2" class="step">
-      <div style="font-size:22px; font-weight:bold;">2. 航行 4 小時（有 4 個 18）</div>
-      <p>順流 18km/h，跑了 4 小時。<br>點擊按鈕，看船一段一段跑！</p>
-      <button onclick="startSailing()">開始航行！</button>
+      <div style="font-size:22px; font-weight:bold;">2. 順流 4 小時 (有 4 個 18)</div>
+      <button onclick="startForward()">開始航行去乙地！</button>
     </div>
 
     <div id="s3" class="step">
-      <div style="font-size:22px; font-weight:bold;">3. 填入總距離</div>
-      <p>剛才畫了 4 個 18，總共是多少公里？<br>
-      18 × 4 = <input type="number" id="ans2"> 公里</p>
-      <button onclick="check2()">正確！下一關</button>
-    </div>
-
-    <div id="s4" class="step">
-        <div style="font-size:22px; font-weight:bold;">4. 逆流返回</div>
-        <p>距離 72 ÷ 逆流速 (15-3=12) = <br>
-        <input type="number" id="ans3"> 小時</p>
-        <button onclick="check3()">看結果</button>
+      <div style="font-size:22px; font-weight:bold;">3. 逆流返回 (水在擋你)</div>
+      <p>現在我們要從乙地回甲地。<br>總距離是 <span style="color:red; font-weight:bold;">72km</span>，逆流速是 12km/h。</p>
+      <input type="number" id="ans3" placeholder="幾小時？">
+      <button onclick="check3()">準備返回</button>
     </div>
 
     <div id="final" class="step" style="background:#E8F8F5;">
       <h3>✅ 挑戰成功！</h3>
-      <p>看到 4 個 18 公里的線段了嗎？這就是總距離！</p>
-      <a href="index.html" style="font-weight:bold; color:#5D4037; text-decoration:none; border-bottom:2px solid;">🏠 回到大廳</a>
+      <p>順流 18km/h 比較快，逆流 12km/h 比較慢。<br>所以回程花了更長的時間 (6小時)！</p>
+      <a href="index.html" style="font-weight:bold; color:#5D4037; text-decoration:none;">🏠 回到大廳</a>
     </div>
   </div>
 </div>
@@ -87,46 +77,44 @@
     if(document.getElementById('ans1').value == 18) {
       document.getElementById('s1').classList.remove('active');
       document.getElementById('s2').classList.add('active');
-    } else { alert("順流要相加喔！"); }
+    }
   }
 
-  function startSailing() {
-    let currentSeg = 1;
+  function startForward() {
+    let current = 1;
     const boat = document.getElementById('boat');
-    
     const interval = setInterval(() => {
-      if(currentSeg <= 4) {
-        const seg = document.getElementById('seg' + currentSeg);
-        seg.style.width = "25%"; // 每一段佔 25%
-        seg.querySelector('.segment-text').style.display = "block";
-        
-        // 船移動到該段末端 (加上初始 5% 位址)
-        boat.style.left = (5 + (currentSeg * 18.75)) + "%"; 
-        
-        currentSeg++;
+      if(current <= 4) {
+        document.getElementById('seg' + current).style.width = "25%";
+        document.getElementById('seg' + current).querySelector('.segment-text').style.display = "block";
+        // 船精準移動到每段末尾
+        boat.style.left = (5 + (current * 20.75)) + "%"; 
+        current++;
       } else {
         clearInterval(interval);
         setTimeout(() => {
           document.getElementById('s2').classList.remove('active');
           document.getElementById('s3').classList.add('active');
+          // 隱藏分段，顯示總長橘色線
+          for(let i=1; i<=4; i++) document.getElementById('seg'+i).style.display = "none";
+          document.getElementById('fullSeg').style.width = "100%";
+          document.getElementById('fullText').style.display = "block";
+          boat.style.transform = "scaleX(-1)"; // 船轉向
         }, 1000);
       }
-    }, 1000); // 每一秒跑一段
-  }
-
-  function check2() {
-    if(document.getElementById('ans2').value == 72) {
-      document.getElementById('s3').classList.remove('active');
-      document.getElementById('s4').classList.add('active');
-      document.getElementById('boat').style.transform = "scaleX(-1)";
-    }
+    }, 1000);
   }
 
   function check3() {
     if(document.getElementById('ans3').value == 6) {
-      document.getElementById('boat').style.left = "5%";
-      document.getElementById('s4').classList.remove('active');
-      document.getElementById('final').classList.add('active');
+      // 逆流緩慢返回，時間設長一點 (3秒) 強調速率慢
+      const boat = document.getElementById('boat');
+      boat.style.transition = "left 3s linear"; 
+      boat.style.left = "5%";
+      setTimeout(() => {
+        document.getElementById('s3').classList.remove('active');
+        document.getElementById('final').classList.add('active');
+      }, 3500);
     }
   }
 </script>
