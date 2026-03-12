@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小兔與浣熊的數學大廳</title>
+    <style>
+        :root {
+            --bg-color: #FFF9E3; /* 溫暖淡黃色背景 */
+            --card-color: #FFFFFF;
+            --accent-yellow: #FFD966;
+            --text-brown: #5D4037;
+            --btn-green: #A8D08D;
+        }
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-brown);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #8D6E63;
+            margin-bottom: 10px;
+        }
+        .lobby-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .unit-card {
+            background: var(--card-color);
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 3px solid transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .unit-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-yellow);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+        }
+        .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin: 10px 0;
+            font-size: 1.5rem;
+        }
+        p {
+            color: #795548;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .enter-btn {
+            background-color: var(--btn-green);
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: background 0.3s;
+        }
+        .enter-btn:hover {
+            background-color: #8EBC72;
+        }
+        footer {
+            margin-top: 60px;
+            font-size: 0.9rem;
+            color: #A1887F;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌟 我們的數學探索大廳 🌟</h1>
+        <p>點選一個單元，開始今天的挑戰吧！</p>
+    </header>
+
+    <div class="lobby-container">
+        <div class="unit-card">
+            <div>
+                <div class="icon">🦊🐱</div>
+                <h2>速率：追趕問題</h2>
+                <p>幫助奇奇與妮妮算出追趕的距離，看看誰會先到終點呢？</p>
+            </div>
+            <a href="race-game.html" class="enter-btn">點我開始</a>
+        </div>
+
+        <div class="unit-card" style="opacity: 0.7;">
+            <div>
+                <div class="icon">📐</div>
+                <h2>圖形與面積</h2>
+                <p>（新單元製作中...敬請期待！）</p>
+            </div>
+            <a href="#" class="enter-btn" style="background-color: #ccc; pointer-events: none;">即將推出</a>
+        </div>
+
+        <div class="unit-card" style="opacity: 0.7;">
+            <div>
+                <div class="icon">🍰</div>
+                <h2>分數的運算</h2>
+                <p>（新單元製作中...敬請期待！）</p>
+            </div>
+            <a href="#" class="enter-btn" style="background-color: #ccc; pointer-events: none;">即將推出</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 特教教學資源中心 | 打造最溫馨的學習環境</p>
+    </footer>
+
+</body>
+</html>
