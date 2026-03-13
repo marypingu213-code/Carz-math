@@ -3,105 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>相遇問題：隨機挑戰賽</title>
+<title>相遇問題挑戰賽</title>
 <style>
   html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #FFF9E3; display: flex; justify-content: center; align-items: center; }
   .card { background: white; width: 95vw; height: 92vh; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; }
   .track { background: #555; flex: 0 0 200px; border-radius: 15px; position: relative; margin: 10px 0; border: 4px solid #333; overflow: visible; }
-  
   .runner { position: absolute; font-size: 55px; transition: all 2s linear; z-index: 10; display: flex; flex-direction: column; align-items: center; }
   .runner span { font-size: 14px; color: #333; background: #fff; padding: 2px 6px; border-radius: 4px; margin-top: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; }
-  
-  /* 藍車在左，翻轉朝右跑 */
   #blue-car { top: 20px; left: 5%; transform: scaleX(-1); }
   #blue-car span { transform: scaleX(-1); }
-  
-  /* 紅車在右，預設朝左跑 */
   #red-car { top: 95px; right: 5%; }
-
   .distance-line { position: absolute; bottom: 15px; left: 7%; width: 86%; height: 12px; background: #bdc3c7; border-radius: 6px; border: 2px solid white; }
   .line-text { position: absolute; width: 100%; text-align: center; top: 18px; font-weight: bold; color: #8D6E63; }
-  
   .step-area { flex: 1; margin-top: 30px; position: relative; }
   .step { display: none; background: #FFFDF0; border: 3px solid #FFD966; border-radius: 15px; padding: 15px; height: 100%; box-sizing: border-box; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
   .active { display: flex; }
-
   input { font-size: 28px; width: 140px; text-align: center; border: 3px solid #FFD966; border-radius: 10px; padding: 8px; margin: 10px; }
   button { background: #f1c40f; color: #333; border: none; padding: 15px 35px; border-radius: 40px; font-size: 1.2rem; cursor: pointer; font-weight: bold; }
 </style>
 </head>
 <body>
 <div class="card">
-  <h2 id="quest-title" style="text-align:center; color:#5D4037;">🏎️ 相遇問題：挑戰賽</h2>
+  <h2 id="quest-title" style="text-align:center; color:#5D4037; font-size: 20px; margin-top: 0;">載入中...</h2>
+  
   <div class="track">
     <div id="blue-car" class="runner">🚙<span id="label-blue">藍車</span></div>
     <div id="red-car" class="runner">🚗<span id="label-red">紅車</span></div>
     <div class="distance-line"><div class="line-text" id="label-dist">總距離 --- 公尺</div></div>
   </div>
+
   <div class="step-area">
     <div id="s1" class="step active">
-      <div style="font-size:22px; font-weight:bold;">1. 算出兩車的「速度和」</div>
-      <p>兩車對開，一分鐘共縮短多少公尺？</p>
-      <input type="number" id="ans1"> m/分
-      <button onclick="check1()">確認速度和</button>
+        <div id="step1-title" style="font-size:22px; font-weight:bold; margin-bottom: 10px;">1. 算出「速度和」</div>
+        <p id="step1-desc">相向出發，一分鐘共縮短幾公尺？</p>
+        <input type="number" id="ans1"> m/分
+        <button onclick="check1()">確認答案</button>
     </div>
+
     <div id="s2" class="step">
-      <div style="font-size:22px; font-weight:bold;">2. 幾分鐘後會相遇？</div>
-      <p>總距離 ÷ 速度和 = ?</p>
-      <input type="number" id="ans2"> 分鐘
-      <button onclick="check2()">出發！看看相遇點</button>
+        <div style="font-size:22px; font-weight:bold; margin-bottom: 10px;">2. 幾分鐘後會相遇？</div>
+        <p id="step2-desc">總距離 ÷ 速度和 = ?</p>
+        <input type="number" id="ans2"> 分鐘
+        <button onclick="check2()">出發！看結果</button>
     </div>
+
     <div id="final" class="step" style="background:#E8F8F5;">
-      <h3>💖 挑戰成功！</h3>
-      <button onclick="location.reload()" style="background:#A8D08D; margin-bottom:10px; padding: 10px 20px;">換一題練習</button>
+      <h3>✅ 挑戰成功！</h3>
+      <button onclick="location.reload()" style="background:#A8D08D; margin-bottom:10px; padding: 10px 20px;">換下一題練習</button>
       <a href="index.html" style="font-weight:bold; color:#5D4037; text-decoration:none; border-bottom:2px solid;">🏠 回到大廳</a>
     </div>
   </div>
 </div>
 
 <script>
-  // 更新後的題庫
+  // 嚴格遵守圖片敘述的題庫
   const questions = [
-    { dist: 1250, bSpeed: 325, rSpeed: 300, time: 2 }, // 第 1 題
-    { dist: 1400, bSpeed: 80, rSpeed: 60, time: 10 }, // 第 2 題 (圖片 1)
-    { dist: 840, bSpeed: 75, rSpeed: 65, time: 6 }    // 第 3 題 (圖片 2)
+    { 
+      title: "直線車道上有兩臺遙控汽車，橘車速率 300 公尺/分，綠車 325 公尺/分。", 
+      sub: "如果兩車相距 1250 公尺，同時相向出發，幾分鐘後會相遇？",
+      dist: 1250, bSpeed: 325, rSpeed: 300, time: 2,
+      bName: "綠車", rName: "橘車"
+    },
+    { 
+      title: "直線跑道上有兩臺遙控汽車，藍車速率 80 公尺/分，紅車 60 公尺/分。", 
+      sub: "兩車相距 1400 公尺，同時相向出發，幾分鐘後會相遇？",
+      dist: 1400, bSpeed: 80, rSpeed: 60, time: 10,
+      bName: "藍車", rName: "紅車"
+    },
+    { 
+      title: "小芳和小明相距 840 公尺。小芳跑步速率 75 公尺/分，小明 65 公尺/分。", 
+      sub: "兩人同時相向而行，幾分鐘後會相遇？",
+      dist: 840, bSpeed: 75, rSpeed: 65, time: 6,
+      bName: "小芳", rName: "小明"
+    }
   ];
 
-  // 隨機選題
   const qIdx = Math.floor(Math.random() * questions.length);
   const q = questions[qIdx];
 
-  // 初始化題目文字
-  document.getElementById('quest-title').innerText = `🏎️ 相遇問題：挑戰題 (${qIdx + 1})`;
-  document.getElementById('label-blue').innerText = `藍車(${q.bSpeed}m/分)`;
-  document.getElementById('label-red').innerText = `紅車(${q.rSpeed}m/分)`;
-  document.getElementById('label-dist').innerText = `總距離 ${q.dist} 公尺`;
+  // 更新介面文字
+  document.getElementById('quest-title').innerHTML = q.title + "<br><span style='font-size:16px; color:#E74C3C;'>" + q.sub + "</span>";
+  document.getElementById('label-blue').innerText = `${q.bName}(${q.bSpeed}m/分)`;
+  document.getElementById('label-red').innerText = `${q.rName}(${q.rSpeed}m/分)`;
+  document.getElementById('label-dist').innerText = `相距 ${q.dist} 公尺`;
 
   function check1() {
-    const correctSum = q.bSpeed + q.rSpeed;
-    if(document.getElementById('ans1').value == correctSum) {
+    if(document.getElementById('ans1').value == (q.bSpeed + q.rSpeed)) {
       document.getElementById('s1').classList.remove('active');
       document.getElementById('s2').classList.add('active');
-    } else { alert("再算算看，速度要相加喔！"); }
+    } else { alert(`提示：${q.bSpeed} + ${q.rSpeed} = ?`); }
   }
 
   function check2() {
     if(document.getElementById('ans2').value == q.time) {
       const blue = document.getElementById('blue-car');
       const red = document.getElementById('red-car');
-      
-      // 動態計算相遇點比例
-      const meetRatio = (q.bSpeed * q.time) / q.dist; 
-      const trackWidth = 86; // 跑道實際可用百分比
-      
-      blue.style.left = (5 + (meetRatio * trackWidth)) + "%";
-      red.style.right = (91 - (meetRatio * trackWidth)) + "%";
-      
+      const meetRatio = (q.bSpeed * q.time) / q.dist;
+      blue.style.left = (5 + (meetRatio * 86)) + "%";
+      red.style.right = (91 - (meetRatio * 86)) + "%";
       setTimeout(() => {
         document.getElementById('s2').classList.remove('active');
         document.getElementById('final').classList.add('active');
       }, 2200);
-    } else { alert("拿總距離除以速度和試試看！"); }
+    } else { alert(`提示：${q.dist} ÷ ${q.bSpeed + q.rSpeed} = ?`); }
   }
 </script>
 </body>
