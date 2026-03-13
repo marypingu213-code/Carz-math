@@ -12,6 +12,7 @@
             --btn-green: #A8D08D;
             --accent-red: #E74C3C;
         }
+        
         body {
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
             background-color: var(--bg-yellow);
@@ -37,7 +38,7 @@
             z-index: 1000;
             font-weight: bold;
             font-size: 0.9rem;
-            color: var(--text-brown);
+            line-height: 1.4;
         }
         #countdown-timer span { color: var(--accent-red); font-size: 1.1rem; }
 
@@ -50,7 +51,9 @@
             gap: 25px;
             width: 100%;
             max-width: 1000px;
+            margin-bottom: 100px; /* 預留底部空間給 QR Code */
         }
+
         .unit-card {
             background: var(--card-white);
             border-radius: 20px;
@@ -82,7 +85,7 @@
         }
         .enter-btn:hover { background-color: #8EBC72; box-shadow: 0 4px 12px rgba(168,208,141,0.4); }
 
-        /* QR Code 區域 (右下角) */
+        /* QR Code 區域 (右下角固定) */
         .qrcode-container {
             position: fixed;
             bottom: 20px;
@@ -93,13 +96,20 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             text-align: center;
             border: 1px solid #ddd;
+            z-index: 1000;
         }
-        .qrcode-container img { width: 100px; height: 100px; }
+        #qrcode img { 
+            width: 120px; 
+            height: 120px; 
+            display: block;
+        }
         .qrcode-text { font-size: 12px; margin-top: 5px; color: #888; font-weight: bold; }
 
+        /* 手機板調整 */
         @media (max-width: 600px) {
             h1 { font-size: 1.8rem; }
             #countdown-timer { position: static; margin-bottom: 20px; width: 90%; text-align: center; }
+            .qrcode-container { position: static; margin-top: 30px; display: inline-block; }
         }
     </style>
 </head>
@@ -172,12 +182,18 @@
         setInterval(updateTimer, 1000);
         updateTimer();
 
-        // 2. 自動產生 QR Code
-        const currentUrl = window.location.href;
-        const qrImg = document.createElement('img');
-        // 使用 Google Chart API 產生 QR Code
-        qrImg.src = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(currentUrl)}&choe=UTF-8`;
-        document.getElementById('qrcode').appendChild(qrImg);
+        // 2. 自動產生 QR Code (使用穩定的 QRServer API)
+        window.onload = function() {
+            const currentUrl = window.location.href;
+            const qrcodeDiv = document.getElementById('qrcode');
+            
+            const qrImg = document.createElement('img');
+            // 構建 API 網址
+            qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(currentUrl);
+            qrImg.alt = "QR Code";
+            
+            qrcodeDiv.appendChild(qrImg);
+        };
     </script>
 
 </body>
