@@ -3,82 +3,94 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>相遇問題實驗室</title>
+<title>相遇問題：隨機挑戰賽</title>
 <style>
   html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #FFF9E3; display: flex; justify-content: center; align-items: center; }
   .card { background: white; width: 95vw; height: 92vh; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; }
-  
   .track { background: #555; flex: 0 0 200px; border-radius: 15px; position: relative; margin: 10px 0; border: 4px solid #333; overflow: visible; }
-  
   .runner { position: absolute; font-size: 55px; transition: all 2s linear; z-index: 10; display: flex; flex-direction: column; align-items: center; }
   .runner span { font-size: 14px; color: #333; background: #fff; padding: 2px 6px; border-radius: 4px; margin-top: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; }
-  
-  /* 交換位置：藍車在左(預設車頭朝左，向右跑)，紅車在右(需要翻轉向左跑) */
-  #blue-car { top: 20px; left: 5%; transform: scaleX(-1); } /* 翻轉成朝右 */
-  #blue-car span { transform: scaleX(-1); } /* 文字轉正 */
-  
-  #red-car { top: 95px; right: 5%; } /* 預設車頭朝左，不用動 */
-
+  #blue-car { top: 20px; left: 5%; transform: scaleX(-1); }
+  #blue-car span { transform: scaleX(-1); }
+  #red-car { top: 95px; right: 5%; }
   .distance-line { position: absolute; bottom: 15px; left: 7%; width: 86%; height: 12px; background: #bdc3c7; border-radius: 6px; border: 2px solid white; }
   .line-text { position: absolute; width: 100%; text-align: center; top: 18px; font-weight: bold; color: #8D6E63; }
-
   .step-area { flex: 1; margin-top: 30px; position: relative; }
   .step { display: none; background: #FFFDF0; border: 3px solid #FFD966; border-radius: 15px; padding: 15px; height: 100%; box-sizing: border-box; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
   .active { display: flex; }
-
   input { font-size: 28px; width: 140px; text-align: center; border: 3px solid #FFD966; border-radius: 10px; padding: 8px; margin: 10px; }
   button { background: #f1c40f; color: #333; border: none; padding: 15px 35px; border-radius: 40px; font-size: 1.2rem; cursor: pointer; font-weight: bold; }
 </style>
 </head>
 <body>
 <div class="card">
-  <h2 style="text-align:center; color:#5D4037;">🏎️ 相遇問題：交換位置版</h2>
+  <h2 id="quest-title" style="text-align:center; color:#5D4037;">🏎️ 相遇問題：第 1 題</h2>
   <div class="track">
-    <div id="blue-car" class="runner">🚙<span>藍車(325m/分)</span></div>
-    <div id="red-car" class="runner">🚗<span>紅車(300m/分)</span></div>
-    <div class="distance-line"><div class="line-text">總距離 1250 公尺</div></div>
+    <div id="blue-car" class="runner">🚙<span id="label-blue">藍車</span></div>
+    <div id="red-car" class="runner">🚗<span id="label-red">紅車</span></div>
+    <div class="distance-line"><div class="line-text" id="label-dist">總距離 --- 公尺</div></div>
   </div>
   <div class="step-area">
     <div id="s1" class="step active">
       <div style="font-size:22px; font-weight:bold;">1. 算出兩車的「速度和」</div>
-      <p>兩車對開，每分鐘共縮短多少？<br>325 + 300 = <input type="number" id="ans1"> m/分</p>
+      <p id="hint1">兩車對開，每分鐘共縮短多少？</p>
+      <input type="number" id="ans1"> m/分
       <button onclick="check1()">確認速度和</button>
     </div>
     <div id="s2" class="step">
       <div style="font-size:22px; font-weight:bold;">2. 幾分鐘後會相遇？</div>
-      <p>1250m ÷ 625m/分 = <input type="number" id="ans2"> 分鐘</p>
+      <p id="hint2">總距離 ÷ 速度和 = ?</p>
+      <input type="number" id="ans2"> 分鐘
       <button onclick="check2()">出發！看看相遇點</button>
     </div>
     <div id="final" class="step" style="background:#E8F8F5;">
-      <h3>💖 成功相遇！</h3>
-      <p>這次車頭方向完全正確了！</p>
+      <h3 id="result-text">💖 成功相遇！</h3>
+      <button onclick="location.reload()" style="background:#A8D08D; margin-bottom:10px;">再挑戰一題</button>
       <a href="index.html" style="font-weight:bold; color:#5D4037; text-decoration:none; border-bottom:2px solid;">🏠 回到大廳</a>
     </div>
   </div>
 </div>
 
 <script>
+  // 題庫設定
+  const questions = [
+    { dist: 1250, bSpeed: 325, rSpeed: 300, time: 2 },
+    { dist: 1000, bSpeed: 120, rSpeed: 80, time: 5 },
+    { dist: 1800, bSpeed: 250, rSpeed: 200, time: 4 }
+  ];
+
+  // 隨機選一題
+  const qIdx = Math.floor(Math.random() * questions.length);
+  const q = questions[qIdx];
+
+  // 初始化畫面
+  document.getElementById('quest-title').innerText = `🏎️ 相遇問題：挑戰第 ${qIdx + 1} 題`;
+  document.getElementById('label-blue').innerText = `藍車(${q.bSpeed}m/分)`;
+  document.getElementById('label-red').innerText = `紅車(${q.rSpeed}m/分)`;
+  document.getElementById('label-dist').innerText = `總距離 ${q.dist} 公尺`;
+
   function check1() {
-    if(document.getElementById('ans1').value == 625) {
+    if(document.getElementById('ans1').value == (q.bSpeed + q.rSpeed)) {
       document.getElementById('s1').classList.remove('active');
       document.getElementById('s2').classList.add('active');
-    }
+    } else { alert(`提示：${q.bSpeed} + ${q.rSpeed} = ?`); }
   }
 
   function check2() {
-    if(document.getElementById('ans2').value == 2) {
+    if(document.getElementById('ans2').value == q.time) {
       const blue = document.getElementById('blue-car');
       const red = document.getElementById('red-car');
       
-      // 藍車稍微快一點點 (52%位址)，紅車(48%位址)
-      blue.style.left = "49%";
-      red.style.right = "46%";
+      // 計算相遇位置比例 (藍車走的距離 / 總距離)
+      const meetPos = (q.bSpeed * q.time) / q.dist * 86; // 86% 是跑道可用寬度
+      blue.style.left = (5 + meetPos) + "%";
+      red.style.right = (91 - meetPos) + "%";
       
       setTimeout(() => {
         document.getElementById('s2').classList.remove('active');
         document.getElementById('final').classList.add('active');
       }, 2200);
-    }
+    } else { alert(`提示：${q.dist} ÷ ${q.bSpeed + q.rSpeed} = ?`); }
   }
 </script>
 </body>
