@@ -9,19 +9,24 @@
   .card { background: white; width: 95vw; height: 92vh; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; }
   
   .track { background: #555; flex: 0 0 200px; border-radius: 15px; position: relative; margin: 10px 0; border: 4px solid #333; overflow: visible; }
+  
+  /* 通用賽車樣式 */
   .runner { position: absolute; font-size: 55px; transition: all 2s linear; z-index: 10; display: flex; flex-direction: column; align-items: center; }
   .runner span { font-size: 14px; color: #333; background: #fff; padding: 2px 6px; border-radius: 4px; margin-top: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; }
   
+  /* 紅車：在左邊，車頭預設朝右 (OK) */
   #orange-car { top: 20px; left: 5%; }
   
-  /* 修正：將綠車水平翻轉，讓車頭朝左 */
+  /* 藍車：在右邊，將其水平翻轉讓車頭朝左 */
   #green-car { 
     top: 95px; 
     right: 5%; 
     transform: scaleX(-1); 
   }
-  /* 文字標籤不需要翻轉，否則字會變反的，所以要在 span 把它翻回來 */
-  #green-car span { transform: scaleX(-1); }
+  /* 重要：文字標籤必須再反轉一次，字才不會變反的 */
+  #green-car span { 
+    transform: scaleX(-1); 
+  }
 
   .distance-line { position: absolute; bottom: 15px; left: 7%; width: 86%; height: 12px; background: #bdc3c7; border-radius: 6px; border: 2px solid white; }
   .line-text { position: absolute; width: 100%; text-align: center; top: 18px; font-weight: bold; color: #8D6E63; }
@@ -36,26 +41,26 @@
 </head>
 <body>
 <div class="card">
-  <h2 style="text-align:center; color:#5D4037;">🏎️ 相遇問題：車頭對車頭</h2>
+  <h2 style="text-align:center; color:#5D4037;">🏎️ 相遇問題：車頭對向實驗</h2>
   <div class="track">
-    <div id="orange-car" class="runner">🚗<span>橘車(300m/分)</span></div>
-    <div id="green-car" class="runner">🚙<span>綠車(325m/分)</span></div>
+    <div id="orange-car" class="runner">🚗<span>紅車(300m/分)</span></div>
+    <div id="green-car" class="runner">🚙<span>藍車(325m/分)</span></div>
     <div class="distance-line"><div class="line-text">總距離 1250 公尺</div></div>
   </div>
   <div class="step-area">
     <div id="s1" class="step active">
       <div style="font-size:22px; font-weight:bold;">1. 算出兩車的「速度和」</div>
-      <p>相向出發，每分鐘兩車合力縮短多少公尺？<br>300 + 325 = <input type="number" id="ans1"> m/分</p>
+      <p>紅車向右、藍車向左，每分鐘共縮短多少？<br>300 + 325 = <input type="number" id="ans1"> m/分</p>
       <button onclick="check1()">確認速度和</button>
     </div>
     <div id="s2" class="step">
       <div style="font-size:22px; font-weight:bold;">2. 幾分鐘後會相遇？</div>
       <p>1250m ÷ 625m/分 = <input type="number" id="ans2"> 分鐘</p>
-      <button onclick="check2()">出發！看看在哪裡碰頭</button>
+      <button onclick="check2()">出發！看看在哪裡相撞</button>
     </div>
     <div id="final" class="step" style="background:#E8F8F5;">
       <h3>💖 成功相遇！</h3>
-      <p>兩車面對面出發，2 分鐘後剛好碰頭。</p>
+      <p>紅車車頭朝右，藍車車頭朝左，兩車精準碰頭。</p>
       <a href="index.html" style="font-weight:bold; color:#5D4037; text-decoration:none; border-bottom:2px solid;">🏠 回到大廳</a>
     </div>
   </div>
@@ -66,7 +71,7 @@
     if(document.getElementById('ans1').value == 625) {
       document.getElementById('s1').classList.remove('active');
       document.getElementById('s2').classList.add('active');
-    }
+    } else { alert("相向而行，速度要相加喔！"); }
   }
 
   function check2() {
@@ -74,16 +79,16 @@
       const orange = document.getElementById('orange-car');
       const green = document.getElementById('green-car');
       
-      // 橘車移動到相遇點
+      // 橘車移動到相遇點 (46%)
       orange.style.left = "46%";
-      // 綠車移動到相遇點（維持翻轉狀態）
+      // 綠車移動到相遇點 (49%，維持翻轉狀態)
       green.style.right = "49%";
       
       setTimeout(() => {
         document.getElementById('s2').classList.remove('active');
         document.getElementById('final').classList.add('active');
       }, 2200);
-    }
+    } else { alert("算算看，1250 ÷ 625 = ?"); }
   }
 </script>
 </body>
