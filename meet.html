@@ -3,97 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>速率三部曲：動態算式教學版</title>
+<title>速率三部曲：終極清晰版</title>
 <style>
   :root {
     --bg-yellow: #FFF9E3;
-    --card-white: #FFFFFF;
     --text-brown: #5D4037;
-    --blue-main: #0984e3;
-    --red-main: #d63031;
-    --highlight: #27ae60;
+    --highlight-yellow: #f1c40f; /* 亮黃色用於深底字 */
   }
   html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: var(--bg-yellow); display: flex; justify-content: center; align-items: center; font-family: sans-serif; }
   .card { background: white; width: 95vw; height: 92vh; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; }
   
-  /* 賽道 */
-  .track { background: #444; flex: 0 0 220px; border-radius: 15px; position: relative; margin: 10px 0; border: 4px solid #333; overflow: visible; }
+  /* 賽道 - 增加底部空間給數字 */
+  .track { background: #444; flex: 0 0 240px; border-radius: 15px; position: relative; margin: 10px 0; border: 4px solid #333; overflow: visible; }
   
-  /* 遙控車樣式 - 大數字 */
+  /* 遙控車樣式 - 修正翻轉問題 */
   .runner { position: absolute; font-size: 65px; transition: all 2s linear; z-index: 10; display: flex; flex-direction: column; align-items: center; }
-  .runner span { 
-    font-size: 22px; /* 放大標籤字體 */
+  
+  /* 獨立標籤樣式 - 確保文字永遠是正的 */
+  .car-label { 
+    font-size: 24px; 
     color: black; 
     background: white; 
-    padding: 5px 12px; 
+    padding: 6px 14px; 
     border-radius: 10px; 
     margin-top: -10px; 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3); 
     font-weight: bold;
-    border: 2px solid #333;
+    border: 3px solid #333;
+    white-space: nowrap;
+    transform: scaleX(1) !important; /* 強制文字不翻轉 */
   }
   
-  .distance-line { position: absolute; bottom: 15px; left: 7%; width: 86%; height: 12px; background: #bdc3c7; border-radius: 6px; border: 2px solid white; }
-  .line-text { position: absolute; width: 100%; text-align: center; top: 18px; font-weight: bold; color: var(--text-brown); font-size: 20px; }
-
-  /* 算式區樣式 */
-  .formula-display { 
-    background: #e8f4fd; 
-    color: #0984e3; 
-    padding: 10px; 
-    border-radius: 10px; 
-    font-size: 24px; 
-    font-weight: bold; 
-    margin: 10px 0;
-    display: none; /* 初始隱藏 */
+  /* 距離線與數字 - 換色關鍵 */
+  .distance-line { position: absolute; bottom: 45px; left: 7%; width: 86%; height: 12px; background: #bdc3c7; border-radius: 6px; border: 2px solid white; }
+  .line-text { 
+    position: absolute; 
+    width: 100%; 
+    text-align: center; 
+    bottom: 10px; /* 移到線的下方 */
+    font-weight: 900; 
+    color: var(--highlight-yellow); /* 改為亮黃色 */
+    font-size: 26px; /* 放大字體 */
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8); /* 增加黑影，讓黃字更跳 */
   }
 
-  /* 互動按鈕與輸入 */
-  .step-area { flex: 1; margin-top: 20px; position: relative; }
+  .formula-display { background: #e8f4fd; color: #0984e3; padding: 12px; border-radius: 12px; font-size: 28px; font-weight: bold; margin: 10px 0; display: none; border: 2px dashed #0984e3; }
+
+  .step-area { flex: 1; margin-top: 15px; position: relative; }
   .step { display: none; background: #FFFDF0; border: 3px solid #FFD966; border-radius: 15px; padding: 15px; height: 100%; box-sizing: border-box; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
   .active { display: flex; }
-  input { font-size: 32px; width: 160px; text-align: center; border: 3px solid #FFD966; border-radius: 12px; padding: 8px; margin: 10px; font-weight: bold; color: #d35400; }
-  button { background: #f1c40f; color: #333; border: none; padding: 15px 40px; border-radius: 50px; font-size: 22px; cursor: pointer; font-weight: bold; }
-  
-  .quest-title { font-size: 24px; font-weight: bold; color: var(--red-main); margin-bottom: 5px; }
-  .quest-desc { font-size: 19px; line-height: 1.5; color: #2d3436; margin-bottom: 10px; }
+  input { font-size: 32px; width: 180px; text-align: center; border: 3px solid #FFD966; border-radius: 12px; padding: 8px; margin: 10px; font-weight: bold; }
+  button { background: #f1c40f; color: #333; border: none; padding: 15px 45px; border-radius: 50px; font-size: 24px; cursor: pointer; font-weight: bold; box-shadow: 0 4px #d4ac0d; }
+  button:active { transform: translateY(4px); box-shadow: none; }
 </style>
 </head>
 <body>
 <div class="card">
   <div id="q-header">
-    <div id="q-title" class="quest-title">載入中...</div>
-    <div id="q-desc" class="quest-desc">載入中...</div>
+    <div id="q-title" style="font-size:24px; font-weight:bold; color:#d63031;">載入中...</div>
+    <div id="q-desc" style="font-size:20px; line-height:1.4; color:#2d3436; margin: 8px 0;">載入中...</div>
   </div>
   
   <div class="track">
-    <div id="blue-car" class="runner">🚙<span id="label-blue">綠車</span></div>
-    <div id="red-car" class="runner">🚗<span id="label-red">橘車</span></div>
-    <div class="distance-line"><div class="line-text" id="label-dist">---</div></div>
+    <div id="blue-car" class="runner">
+        <div style="display:inline-block;" id="blue-img">🚙</div>
+        <div class="car-label" id="label-blue">綠車</div>
+    </div>
+    <div id="red-car" class="runner">
+        <div style="display:inline-block;" id="red-img">🚗</div>
+        <div class="car-label" id="label-red">橘車</div>
+    </div>
+    <div class="distance-line">
+        <div class="line-text" id="label-dist">---</div>
+    </div>
   </div>
 
   <div class="step-area">
     <div id="s1" class="step active">
-        <h3 style="font-size: 24px;">步驟一：列出算式算出規律</h3>
-        <p style="font-size: 20px;">請計算兩台車每分鐘<span id="s1-word">變化</span>的距離：</p>
+        <h3 style="font-size:26px; margin:0;">第一步：計算「每分鐘」變化</h3>
+        <p style="font-size:22px; margin:10px 0;">兩台車每分鐘<span id="s1-word">變化</span>多少公尺？</p>
         <div id="formula1" class="formula-display"></div>
-        <input type="number" id="ans1" placeholder="填入答案">
+        <input type="number" id="ans1" placeholder="填寫答案">
         <button onclick="check1()">確認算式</button>
     </div>
 
     <div id="s2" class="step">
-        <h3 style="font-size: 24px;">步驟二：算出最終答案</h3>
-        <p id="s2-p" style="font-size: 20px;">請列式算出最後結果：</p>
+        <h3 style="font-size:26px; margin:0;">第二步：算出最終結果</h3>
+        <p style="font-size:22px; margin:10px 0;" id="s2-p">請算出正確答案：</p>
         <div id="formula2" class="formula-display"></div>
-        <input type="number" id="ans2" placeholder="填入答案">
+        <input type="number" id="ans2" placeholder="填寫答案">
         <button onclick="check2()">看動畫演示</button>
     </div>
 
-    <div id="final" class="step" style="background:#E8F8F5;">
-      <h3 style="font-size: 28px; color: var(--highlight);">🎉 挑戰成功！</h3>
-      <div id="final-summary" style="font-size: 20px; margin-bottom: 15px;"></div>
-      <button onclick="location.reload()" style="background:#A8D08D; padding: 15px 30px;">換一題練習</button>
-      <a href="index.html" style="font-weight:bold; color:var(--text-brown); text-decoration:none; margin-top:20px; font-size: 18px; border-bottom: 2px solid;">🏠 回到大廳</a>
+    <div id="final" class="step" style="background:#E8F8F5; border:3px solid #2ecc71;">
+      <h3 style="font-size:32px; color:#27ae60; margin:10px 0;">🎉 挑戰成功！</h3>
+      <div id="final-summary" style="font-size:24px; line-height:1.6; font-weight:bold;"></div>
+      <button onclick="location.reload()" style="background:#A8D08D; margin-top:20px;">換下一題</button>
+      <a href="index.html" style="font-weight:bold; color:#5D4037; text-decoration:none; margin-top:20px; font-size:20px; border-bottom:2px solid;">🏠 回到大廳</a>
     </div>
   </div>
 </div>
@@ -104,48 +110,49 @@
       type: "相向",
       title: "題目：相向出發 (面對面)",
       desc: "橘車速率 300 m/分，綠車 325 m/分。兩車相距 1250 公尺，同時相向出發，幾分鐘後會相遇？",
-      dist: 1250, bS: 325, rS: 300, a1: 625, a2: 2, u1: "m/分", u2: "分鐘",
-      f1: "325 + 300 = 625", f2: "1250 ÷ 625 = 2",
-      word: "共同縮短", bPos: 5, rPos: 91, bDir: -1, rDir: 1
+      dist: 1250, bS: 325, rS: 300, a1: 625, a2: 2, f1: "325 + 300 = 625", f2: "1250 ÷ 625 = 2",
+      word: "共同縮短", bPos: 5, rPos: 91, bDir: -1, rDir: 1, bName: "綠車", rName: "橘車"
     },
     {
       type: "反向",
       title: "題目：反方向出發 (背對背)",
       desc: "橘車速率 300 m/分，綠車 325 m/分。兩車同時同地反方向出發，3 分鐘後相距幾公尺？",
-      dist: 0, bS: 325, rS: 300, a1: 625, a2: 1875, u1: "m/分", u2: "公尺",
-      f1: "325 + 300 = 625", f2: "625 × 3 = 1875",
-      word: "拉開距離", bPos: 45, rPos: 45, bDir: 1, rDir: -1
+      dist: 0, bS: 325, rS: 300, a1: 625, a2: 1875, f1: "325 + 300 = 625", f2: "625 × 3 = 1875",
+      word: "拉開距離", bPos: 45, rPos: 45, bDir: 1, rDir: -1, bName: "綠車", rName: "橘車"
     },
     {
       type: "同向",
       title: "題目：同方向出發 (一追一逃)",
       desc: "橘車速率 300 m/分，綠車 325 m/分。兩車同時同地同方向出發，2 分鐘後相距幾公尺？",
-      dist: 0, bS: 325, rS: 300, a1: 25, a2: 50, u1: "m/分", u2: "公尺",
-      f1: "325 - 300 = 25", f2: "25 × 2 = 50",
-      word: "拉開距離", bPos: 5, rPos: 5, bDir: -1, rDir: -1
+      dist: 0, bS: 325, rS: 300, a1: 25, a2: 50, f1: "325 - 300 = 25", f2: "25 × 2 = 50",
+      word: "拉開距離", bPos: 5, rPos: 5, bDir: -1, rDir: -1, bName: "綠車", rName: "橘車"
     }
   ];
 
   const q = questions[Math.floor(Math.random() * questions.length)];
 
-  // 初始化畫面
   document.getElementById('q-title').innerText = q.title;
   document.getElementById('q-desc').innerText = q.desc;
-  document.getElementById('label-blue').innerText = `綠車(${q.bS})`;
-  document.getElementById('label-red').innerText = `橘車(${q.rS})`;
+  document.getElementById('label-blue').innerText = `${q.bName}(${q.bS})`;
+  document.getElementById('label-red').innerText = `${q.rName}(${q.rS})`;
   document.getElementById('s1-word').innerText = q.word;
-  document.getElementById('label-dist').innerText = q.dist > 0 ? `總距離 ${q.dist}m` : "同地出發";
+  document.getElementById('label-dist').innerText = q.dist > 0 ? `總距離 ${q.dist}m` : "起點：同地出發";
 
   const blue = document.getElementById('blue-car');
   const red = document.getElementById('red-car');
+  const bImg = document.getElementById('blue-img');
+  const rImg = document.getElementById('red-img');
+
   blue.style.left = q.bPos + "%";
   red.style.left = q.rPos + "%";
-  blue.style.transform = `scaleX(${q.bDir})`;
-  red.style.transform = `scaleX(${q.rDir})`;
+  
+  // 只翻轉圖示，不翻轉文字
+  bImg.style.transform = `scaleX(${q.bDir})`;
+  rImg.style.transform = `scaleX(${q.rDir})`;
 
   function check1() {
     if(document.getElementById('ans1').value == q.a1) {
-      document.getElementById('formula1').innerText = "算式： " + q.f1;
+      document.getElementById('formula1').innerText = "✅ 算式： " + q.f1;
       document.getElementById('formula1').style.display = "block";
       setTimeout(() => {
         document.getElementById('s1').classList.remove('active');
@@ -156,10 +163,9 @@
 
   function check2() {
     if(document.getElementById('ans2').value == q.a2) {
-      document.getElementById('formula2').innerText = "算式： " + q.f2;
+      document.getElementById('formula2').innerText = "✅ 算式： " + q.f2;
       document.getElementById('formula2').style.display = "block";
       
-      // 動畫
       if(q.type === "相向") { blue.style.left = "46%"; red.style.left = "49%"; }
       else if(q.type === "反向") { blue.style.left = "2%"; red.style.left = "88%"; }
       else { blue.style.left = "45%"; red.style.left = "35%"; }
@@ -170,7 +176,7 @@
         document.getElementById('s2').classList.remove('active');
         document.getElementById('final').classList.add('active');
       }, 2500);
-    } else { alert("算式列對了嗎？再試一次！"); }
+    } else { alert("算式結果不對喔，再檢查一次！"); }
   }
 </script>
 </body>
