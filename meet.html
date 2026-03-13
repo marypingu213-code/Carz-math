@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>相遇問題實驗室</title>
+<style>
+  html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #FFF9E3; display: flex; justify-content: center; align-items: center; }
+  .card { background: white; width: 95vw; height: 92vh; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; box-sizing: border-box; }
+  
+  .track { background: #555; flex: 0 0 200px; border-radius: 15px; position: relative; margin: 10px 0; border: 4px solid #333; overflow: visible; }
+  .runner { position: absolute; font-size: 50px; transition: all 2s linear; z-index: 10; display: flex; flex-direction: column; align-items: center; }
+  .runner span { font-size: 14px; color: #333; background: #fff; padding: 2px 6px; border-radius: 4px; margin-top: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; }
+  
+  #orange-car { top: 20px; left: 5%; }
+  #green-car { top: 95px; right: 5%; }
+
+  /* 總長線段 */
+  .distance-line { 
+    position: absolute; bottom: 15px; left: 7%; width: 86%; height: 12px; 
+    background: #bdc3c7; border-radius: 6px; border: 2px solid white; 
+  }
+  .line-text { position: absolute; width: 100%; text-align: center; top: 18px; font-weight: bold; color: #8D6E63; }
+
+  .step-area { flex: 1; margin-top: 30px; position: relative; }
+  .step { display: none; background: #FFFDF0; border: 3px solid #FFD966; border-radius: 15px; padding: 15px; height: 100%; box-sizing: border-box; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .active { display: flex; }
+
+  input { font-size: 28px; width: 140px; text-align: center; border: 3px solid #FFD966; border-radius: 10px; padding: 8px; margin: 10px; }
+  button { background: #f1c40f; color: #333; border: none; padding: 15px 35px; border-radius: 40px; font-size: 1.2rem; cursor: pointer; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h2 style="text-align:center; color:#5D4037;">🏎️ 相遇問題：遙控車大賽</h2>
+  <div class="track">
+    <div id="orange-car" class="runner">🚗<span>橘車(300m/分)</span></div>
+    <div id="green-car" class="runner">🚙<span>綠車(325m/分)</span></div>
+    <div class="distance-line">
+      <div class="line-text">總距離 1250 公尺</div>
+    </div>
+  </div>
+  <div class="step-area">
+    <div id="s1" class="step active">
+      <div style="font-size:22px; font-weight:bold;">1. 算出兩車的「速度和」</div>
+      <p>相向出發，每分鐘兩車合力縮短多少公尺？<br>300 + 325 = <input type="number" id="ans1"> m/分</p>
+      <button onclick="check1()">確認速度和</button>
+    </div>
+    <div id="s2" class="step">
+      <div style="font-size:22px; font-weight:bold;">2. 幾分鐘後會相遇？</div>
+      <p>總距離 1250m ÷ 速度和 625m/分 = <input type="number" id="ans2"> 分鐘</p>
+      <button onclick="check2()">看遙控車出發！</button>
+    </div>
+    <div id="final" class="step" style="background:#E8F8F5; border-color:#2ecc71;">
+      <h3>💖 成功碰頭！</h3>
+      <p>相向而行，每分鐘共同縮短 625 公尺。<br>經過 2 分鐘，兩台車剛好在中間相遇！</p>
+      <a href="index.html" style="font-weight:bold; color:#5D4037; text-decoration:none; border-bottom:2px solid;">🏠 回到大廳</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function check1() {
+    if(document.getElementById('ans1').value == 625) {
+      document.getElementById('s1').classList.remove('active');
+      document.getElementById('s2').classList.add('active');
+    } else { alert("相向而行要相加喔：300 + 325 = ?"); }
+  }
+
+  function check2() {
+    if(document.getElementById('ans2').value == 2) {
+      const orange = document.getElementById('orange-car');
+      const green = document.getElementById('green-car');
+      
+      // 橘車跑 300*2=600m (約賽道 48%), 綠車跑 325*2=650m (約賽道 52%)
+      // 加上初始的 5% 偏移
+      orange.style.left = "46%";
+      green.style.right = "49%";
+      
+      setTimeout(() => {
+        document.getElementById('s2').classList.remove('active');
+        document.getElementById('final').classList.add('active');
+      }, 2200);
+    } else { alert("算算看，1250 除以 625 等於多少？"); }
+  }
+</script>
+</body>
+</html>
