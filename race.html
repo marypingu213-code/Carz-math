@@ -1,335 +1,360 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, CheckCircle2, XCircle, Play, RotateCcw, Flag } from 'lucide-react';
-
-export default function MathCatchupGame() {
-  const [step, setStep] = useState(1);
-  const [showError, setShowError] = useState(false);
-  
-  // Step 1 Inputs
-  const [xinyuSpeed, setXinyuSpeed] = useState('');
-  const [brotherSpeed, setBrotherSpeed] = useState('');
-  const [headStart, setHeadStart] = useState('');
-  
-  // Step 2 Inputs
-  const [speedDiffFormula1, setSpeedDiffFormula1] = useState('');
-  const [speedDiffFormula2, setSpeedDiffFormula2] = useState('');
-  const [speedDiffAns, setSpeedDiffAns] = useState('');
-
-  // Step 3 Inputs
-  const [timeFormula1, setTimeFormula1] = useState('');
-  const [timeFormula2, setTimeFormula2] = useState('');
-  const [timeAns, setTimeAns] = useState('');
-
-  // Animation State
-  const [animProgress, setAnimProgress] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  // Validate Step 1
-  const checkStep1 = () => {
-    if (xinyuSpeed === '4' && brotherSpeed === '6' && headStart === '54') {
-      setShowError(false);
-      setStep(2);
-    } else {
-      setShowError(true);
-    }
-  };
-
-  // Validate Step 2
-  const checkStep2 = () => {
-    if (speedDiffFormula1 === '6' && speedDiffFormula2 === '4' && speedDiffAns === '2') {
-      setShowError(false);
-      setStep(3);
-    } else {
-      setShowError(true);
-    }
-  };
-
-  // Validate Step 3
-  const checkStep3 = () => {
-    if (timeFormula1 === '54' && timeFormula2 === '2' && timeAns === '27') {
-      setShowError(false);
-      setStep(4);
-    } else {
-      setShowError(true);
-    }
-  };
-
-  // Run Animation
-  useEffect(() => {
-    let animationFrame;
-    let startTime;
-    const duration = 7000; // 將動畫時間放慢至 7 秒
-
-    const animate = (timestamp) => {
-      if (!startTime) startTime = timestamp;
-      const progress = timestamp - startTime;
-      const percentage = Math.min(progress / duration, 1);
-      
-      setAnimProgress(percentage);
-
-      if (percentage < 1) {
-        animationFrame = requestAnimationFrame(animate);
-      } else {
-        setIsPlaying(false);
-      }
-    };
-
-    if (isPlaying) {
-      startTime = null;
-      animationFrame = requestAnimationFrame(animate);
-    }
-
-    return () => cancelAnimationFrame(animationFrame);
-  }, [isPlaying]);
-
-  const startAnimation = () => {
-    setAnimProgress(0);
-    setIsPlaying(true);
-  };
-
-  const resetGame = () => {
-    setStep(1);
-    setXinyuSpeed('');
-    setBrotherSpeed('');
-    setHeadStart('');
-    setSpeedDiffFormula1('');
-    setSpeedDiffFormula2('');
-    setSpeedDiffAns('');
-    setTimeFormula1('');
-    setTimeFormula2('');
-    setTimeAns('');
-    setAnimProgress(0);
-    setIsPlaying(false);
-    setShowError(false);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-sky-50 flex items-center justify-center p-4 md:p-8 font-sans text-gray-800">
-      <div className="w-full max-w-4xl h-full max-h-[900px] bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-sky-200 flex flex-col">
-        
-        {/* Header / Problem Description */}
-        <div className="bg-sky-100 p-6 md:p-8 border-b-4 border-sky-200 shrink-0">
-          <h1 className="text-2xl md:text-3xl font-bold text-sky-800 mb-4 flex items-center gap-2">
-            <Flag className="text-pink-500" />
-            數學挑戰：追趕問題
-          </h1>
-          <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm text-xl md:text-2xl leading-relaxed font-medium">
-            <span className="border-b-4 border-red-400 pb-1">芯語</span>跑步速率是 <span className="text-blue-600 font-bold">4</span> 公尺/秒，哥哥跑步速率是 <span className="text-blue-600 font-bold">6</span> 公尺/秒，兩人在相同的起點往同方向出發，如果<span className="border-b-4 border-red-400 pb-1">芯語</span>先出發，跑了 <span className="text-blue-600 font-bold">54</span> 公尺後，哥哥才出發，哥哥幾秒鐘後可以追上<span className="border-b-4 border-red-400 pb-1">芯語</span>？
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="flex bg-gray-100 h-4 shrink-0">
-          <div className={`h-full bg-green-400 transition-all duration-500`} style={{ width: `${(step / 4) * 100}%` }}></div>
-        </div>
-
-        {/* Game Content - Centered for tablet page-by-page view */}
-        <div className="flex-1 p-4 md:p-8 flex flex-col justify-center items-center overflow-y-auto">
-          <div className="w-full max-w-2xl">
-            
-            {/* STEP 1: Extract Information */}
-            {step === 1 && (
-              <div className="animation-fade-in w-full">
-                <h2 className="text-2xl md:text-3xl font-bold text-sky-700 mb-6 text-center">第一關：找出關鍵密碼 🔍</h2>
-                <p className="text-gray-600 text-xl md:text-2xl mb-8 text-center">請從上面的題目中找出正確的數字填入空格中：</p>
-                
-                <div className="space-y-6 bg-sky-50 p-6 md:p-8 rounded-2xl border-2 border-sky-100">
-                  <div className="flex flex-col md:flex-row items-center justify-between text-xl md:text-2xl gap-4">
-                    <span>1. 芯語的速率是</span>
-                    <div className="flex items-center">
-                      <input type="number" value={xinyuSpeed} onChange={(e) => setXinyuSpeed(e.target.value)} className="w-24 text-center text-2xl font-bold p-3 border-4 border-sky-300 rounded-xl focus:outline-none focus:border-pink-400 mx-3" placeholder="?" />
-                      <span>公尺/秒</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col md:flex-row items-center justify-between text-xl md:text-2xl gap-4">
-                    <span>2. 哥哥的速率是</span>
-                    <div className="flex items-center">
-                      <input type="number" value={brotherSpeed} onChange={(e) => setBrotherSpeed(e.target.value)} className="w-24 text-center text-2xl font-bold p-3 border-4 border-sky-300 rounded-xl focus:outline-none focus:border-pink-400 mx-3" placeholder="?" />
-                      <span>公尺/秒</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col md:flex-row items-center justify-between text-xl md:text-2xl gap-4">
-                    <span>3. 芯語已經領先了</span>
-                    <div className="flex items-center">
-                      <input type="number" value={headStart} onChange={(e) => setHeadStart(e.target.value)} className="w-24 text-center text-2xl font-bold p-3 border-4 border-sky-300 rounded-xl focus:outline-none focus:border-pink-400 mx-3" placeholder="?" />
-                      <span>公尺</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-10 flex flex-col items-center gap-4">
-                  {showError && <p className="text-red-500 text-xl flex items-center gap-2 font-bold"><XCircle size={24}/> 哎呀，數字不太對喔，再看一次題目！</p>}
-                  <button onClick={checkStep1} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-2xl flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-xl">
-                    檢查答案並進入下一關 <ChevronRight size={28} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 2: Speed Difference */}
-            {step === 2 && (
-              <div className="animation-fade-in w-full">
-                <h2 className="text-2xl md:text-3xl font-bold text-sky-700 mb-6 text-center">第二關：計算「速度差」 🏃‍♂️💨</h2>
-                <p className="text-gray-600 text-xl md:text-2xl mb-8 text-center">哥哥跑得比較快，請問哥哥「每秒鐘」可以拉近多少公尺的距離呢？</p>
-                
-                <div className="flex flex-col items-center gap-6 bg-pink-50 p-6 md:p-10 rounded-2xl border-2 border-pink-100 text-xl md:text-2xl font-medium">
-                  <div className="flex items-center gap-2 md:gap-4 w-full justify-center flex-wrap">
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-lg text-gray-500">哥哥速率</span>
-                      <input type="number" value={speedDiffFormula1} onChange={(e) => setSpeedDiffFormula1(e.target.value)} className="w-20 md:w-24 text-center font-bold p-3 border-4 border-pink-300 rounded-xl focus:outline-none focus:border-pink-500" />
-                    </div>
-                    <span className="text-4xl font-bold text-gray-400 mt-8">-</span>
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-lg text-gray-500">芯語速率</span>
-                      <input type="number" value={speedDiffFormula2} onChange={(e) => setSpeedDiffFormula2(e.target.value)} className="w-20 md:w-24 text-center font-bold p-3 border-4 border-pink-300 rounded-xl focus:outline-none focus:border-pink-500" />
-                    </div>
-                    <span className="text-4xl font-bold text-gray-400 mt-8">=</span>
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-lg text-gray-500">每秒追回</span>
-                      <div className="flex items-end gap-2">
-                        <input type="number" value={speedDiffAns} onChange={(e) => setSpeedDiffAns(e.target.value)} className="w-20 md:w-24 text-center font-bold text-pink-600 p-3 border-4 border-pink-400 rounded-xl focus:outline-none focus:border-pink-600 bg-white shadow-inner" placeholder="?" />
-                        <span className="mb-3 text-xl hidden md:inline">公尺/秒</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-lg text-pink-600 font-bold bg-pink-100 px-4 py-2 rounded-lg text-center mt-4">💡 提示：這代表哥哥每秒鐘可以追回這麼多的距離喔！</p>
-                </div>
-
-                <div className="mt-10 flex flex-col items-center gap-4">
-                  {showError && <p className="text-red-500 text-xl flex items-center gap-2 font-bold"><XCircle size={24}/> 減法算錯囉，或者數字填反了！</p>}
-                  <button onClick={checkStep2} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-2xl flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-xl">
-                    檢查答案並進入下一關 <ChevronRight size={28} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: Calculate Time */}
-            {step === 3 && (
-              <div className="animation-fade-in w-full">
-                <h2 className="text-2xl md:text-3xl font-bold text-sky-700 mb-6 text-center">第三關：算出追上的時間 ⏱️</h2>
-                <p className="text-gray-600 text-xl md:text-2xl mb-8 text-center leading-relaxed">芯語先偷跑了 <span className="font-bold text-blue-600 text-3xl">54</span> 公尺，哥哥每秒鐘可以追回 <span className="font-bold text-pink-600 text-3xl">2</span> 公尺。<br/>請問哥哥需要幾秒鐘才能把這 54 公尺追回來？</p>
-                
-                <div className="flex flex-col items-center gap-6 bg-green-50 p-6 md:p-10 rounded-2xl border-2 border-green-100 text-xl md:text-2xl font-medium">
-                  <div className="flex items-center gap-2 md:gap-4 w-full justify-center flex-wrap">
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-lg text-gray-500">落後距離</span>
-                      <input type="number" value={timeFormula1} onChange={(e) => setTimeFormula1(e.target.value)} className="w-24 text-center font-bold p-3 border-4 border-green-300 rounded-xl focus:outline-none focus:border-green-500" />
-                    </div>
-                    <span className="text-4xl font-bold text-gray-400 mt-8">÷</span>
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-lg text-gray-500">每秒追回</span>
-                      <input type="number" value={timeFormula2} onChange={(e) => setTimeFormula2(e.target.value)} className="w-24 text-center font-bold p-3 border-4 border-green-300 rounded-xl focus:outline-none focus:border-green-500" />
-                    </div>
-                    <span className="text-4xl font-bold text-gray-400 mt-8">=</span>
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-lg text-gray-500">需要時間</span>
-                      <div className="flex items-end gap-2">
-                        <input type="number" value={timeAns} onChange={(e) => setTimeAns(e.target.value)} className="w-28 text-center font-bold text-green-700 text-3xl p-3 border-4 border-green-500 rounded-xl focus:outline-none focus:border-green-700 bg-white shadow-inner" placeholder="?" />
-                        <span className="mb-3 text-xl hidden md:inline">秒</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-10 flex flex-col items-center gap-4">
-                  {showError && <p className="text-red-500 text-xl flex items-center gap-2 font-bold"><XCircle size={24}/> 算式或答案不對喔，想想看距離除以速度差等於什麼？</p>}
-                  <button onClick={checkStep3} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-2xl flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-xl">
-                    看解答與動畫！ <Play fill="currentColor" size={28} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4: Success & Animation */}
-            {step === 4 && (
-              <div className="animation-fade-in w-full">
-                <div className="bg-yellow-50 border-4 border-yellow-300 p-6 md:p-8 rounded-3xl text-center mb-8 shadow-lg">
-                  <div className="flex justify-center mb-4">
-                    <CheckCircle2 size={64} className="text-green-500" />
-                  </div>
-                  <h2 className="text-3xl font-black text-yellow-800 mb-4">太棒了！完全正確！🎉</h2>
-                  <p className="text-xl md:text-2xl text-yellow-700 leading-relaxed mb-6">
-                    哥哥需要 <strong className="text-4xl text-red-600">27</strong> <strong>秒鐘</strong> 就可以追上芯語囉！<br/>
-                    <span className="text-lg text-gray-500 mt-2 block">(此時他們都跑到了距離起點 162 公尺的地方)</span>
-                  </p>
-                  
-                  {!isPlaying && animProgress === 0 && (
-                     <button onClick={startAnimation} className="mt-4 bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-full font-bold text-xl flex items-center justify-center gap-3 mx-auto transition-transform hover:scale-105 shadow-xl">
-                       <Play fill="currentColor" size={24} /> 播放追趕動畫
-                     </button>
-                  )}
-                  {!isPlaying && animProgress === 1 && (
-                     <button onClick={startAnimation} className="mt-4 bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-full font-bold text-xl flex items-center justify-center gap-3 mx-auto transition-transform hover:scale-105 shadow-xl">
-                       <RotateCcw size={24} /> 再看一次動畫
-                     </button>
-                  )}
-                </div>
-
-                {/* Animation Track */}
-                <div className="relative w-full h-48 md:h-56 bg-green-50 rounded-2xl border-4 border-green-200 overflow-hidden pt-10 md:pt-14 px-4 md:px-8 shadow-inner">
-                  {/* Finish Line */}
-                  <div className="absolute top-0 bottom-0 w-1.5 bg-red-400 border-r-2 border-dashed border-white" style={{ left: '90%' }}>
-                    <div className="absolute -top-8 -left-8 md:-left-10 bg-red-100 text-red-600 text-sm font-bold px-3 py-1 rounded-full shadow-sm whitespace-nowrap">追上點(162m)</div>
-                  </div>
-
-                  {/* Xinyu Track */}
-                  <div className="relative h-16 mb-6 border-b-4 border-gray-200">
-                    <div className="absolute -left-2 -top-4 text-sm md:text-lg font-bold text-pink-500">芯語 (4m/s)</div>
-                    {/* Start Point Marker for Xinyu */}
-                    <div className="absolute top-8 bottom-0 w-1 bg-pink-300" style={{ left: '30%' }}>
-                       <div className="absolute -bottom-6 -left-8 text-xs md:text-sm font-bold text-pink-500 whitespace-nowrap">起跑點(54m)</div>
-                    </div>
-                    <div 
-                      className="absolute top-4 w-10 h-10 md:w-12 md:h-12 bg-pink-500 rounded-full shadow-lg flex items-center justify-center text-white text-lg md:text-xl font-bold transition-all"
-                      style={{ left: `calc(${30 + (animProgress * 60)}% - 20px)` }}
-                    >
-                      芯
-                    </div>
-                  </div>
-
-                  {/* Brother Track */}
-                  <div className="relative h-16">
-                    <div className="absolute -left-2 -top-4 text-sm md:text-lg font-bold text-blue-500">哥哥 (6m/s)</div>
-                    {/* Start Point Marker for Brother */}
-                    <div className="absolute top-8 bottom-0 w-1 bg-blue-300" style={{ left: '0%' }}>
-                       <div className="absolute -bottom-6 -left-4 text-xs md:text-sm font-bold text-blue-500 whitespace-nowrap">起點(0m)</div>
-                    </div>
-                    <div 
-                      className="absolute top-4 w-10 h-10 md:w-12 md:h-12 bg-blue-500 rounded-full shadow-lg flex items-center justify-center text-white text-lg md:text-xl font-bold transition-all"
-                      style={{ left: `calc(${0 + (animProgress * 90)}% - 20px)` }}
-                    >
-                      哥
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8 flex justify-center">
-                  <button onClick={resetGame} className="text-gray-500 hover:text-gray-800 font-bold text-lg underline flex items-center gap-2 pb-4">
-                    <RotateCcw size={20} /> 重新挑戰一次
-                  </button>
-                </div>
-
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      <style dangerouslySetInnerHTML={{__html: `
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>數學挑戰：追趕問題</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
-          -webkit-appearance: none; 
-          margin: 0; 
+            -webkit-appearance: none; 
+            margin: 0; 
         }
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .animation-fade-in {
-          animation: fadeIn 0.4s ease-out forwards;
+            animation: fadeIn 0.4s ease-out forwards;
         }
-      `}} />
+        /* 防止平板下拉更新等行為 */
+        body { overscroll-behavior-y: none; }
+    </style>
+</head>
+<body class="bg-sky-50 fixed inset-0 flex items-center justify-center p-4 md:p-8 font-sans text-gray-800">
+
+    <div class="w-full max-w-4xl h-full max-h-[900px] bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-sky-200 flex flex-col relative">
+        
+        <!-- Header / Problem Description -->
+        <div class="bg-sky-100 p-6 md:p-8 border-b-4 border-sky-200 shrink-0">
+            <h1 class="text-2xl md:text-3xl font-bold text-sky-800 mb-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-pink-500"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" x2="4" y1="22" y2="15"></line></svg>
+                數學挑戰：追趕問題
+            </h1>
+            <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm text-xl md:text-2xl leading-relaxed font-medium">
+                <span class="border-b-4 border-red-400 pb-1">芯語</span>跑步速率是 <span class="text-blue-600 font-bold">4</span> 公尺/秒，哥哥跑步速率是 <span class="text-blue-600 font-bold">6</span> 公尺/秒，兩人在相同的起點往同方向出發，如果<span class="border-b-4 border-red-400 pb-1">芯語</span>先出發，跑了 <span class="text-blue-600 font-bold">54</span> 公尺後，哥哥才出發，哥哥幾秒鐘後可以追上<span class="border-b-4 border-red-400 pb-1">芯語</span>？
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="flex bg-gray-100 h-4 shrink-0">
+            <div id="progress-bar" class="h-full bg-green-400 transition-all duration-500" style="width: 25%"></div>
+        </div>
+
+        <!-- Game Content -->
+        <div class="flex-1 p-4 md:p-8 flex flex-col justify-center items-center overflow-y-auto">
+            <div class="w-full max-w-2xl">
+                
+                <!-- STEP 1 -->
+                <div id="step1" class="animation-fade-in w-full">
+                    <h2 class="text-2xl md:text-3xl font-bold text-sky-700 mb-6 text-center">第一關：找出關鍵密碼 🔍</h2>
+                    <p class="text-gray-600 text-xl md:text-2xl mb-8 text-center">請從上面的題目中找出正確的數字填入空格中：</p>
+                    
+                    <div class="space-y-6 bg-sky-50 p-6 md:p-8 rounded-2xl border-2 border-sky-100">
+                        <div class="flex flex-col md:flex-row items-center justify-between text-xl md:text-2xl gap-4">
+                            <span>1. 芯語的速率是</span>
+                            <div class="flex items-center">
+                                <input type="number" id="xinyuSpeed" class="w-24 text-center text-2xl font-bold p-3 border-4 border-sky-300 rounded-xl focus:outline-none focus:border-pink-400 mx-3" placeholder="?" />
+                                <span>公尺/秒</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col md:flex-row items-center justify-between text-xl md:text-2xl gap-4">
+                            <span>2. 哥哥的速率是</span>
+                            <div class="flex items-center">
+                                <input type="number" id="brotherSpeed" class="w-24 text-center text-2xl font-bold p-3 border-4 border-sky-300 rounded-xl focus:outline-none focus:border-pink-400 mx-3" placeholder="?" />
+                                <span>公尺/秒</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col md:flex-row items-center justify-between text-xl md:text-2xl gap-4">
+                            <span>3. 芯語已經領先了</span>
+                            <div class="flex items-center">
+                                <input type="number" id="headStart" class="w-24 text-center text-2xl font-bold p-3 border-4 border-sky-300 rounded-xl focus:outline-none focus:border-pink-400 mx-3" placeholder="?" />
+                                <span>公尺</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 flex flex-col items-center gap-4">
+                        <p id="err1" class="hidden text-red-500 text-xl flex items-center gap-2 font-bold">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                            哎呀，數字不太對喔，再看一次題目！
+                        </p>
+                        <button onclick="checkStep1()" class="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-2xl flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-xl">
+                            檢查答案並進入下一關
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2 -->
+                <div id="step2" class="hidden animation-fade-in w-full">
+                    <h2 class="text-2xl md:text-3xl font-bold text-sky-700 mb-6 text-center">第二關：計算「速度差」 🏃‍♂️💨</h2>
+                    <p class="text-gray-600 text-xl md:text-2xl mb-8 text-center">哥哥跑得比較快，請問哥哥「每秒鐘」可以拉近多少公尺的距離呢？</p>
+                    
+                    <div class="flex flex-col items-center gap-6 bg-pink-50 p-6 md:p-10 rounded-2xl border-2 border-pink-100 text-xl md:text-2xl font-medium">
+                        <div class="flex items-center gap-2 md:gap-4 w-full justify-center flex-wrap">
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="text-lg text-gray-500">哥哥速率</span>
+                                <input type="number" id="sd1" class="w-20 md:w-24 text-center font-bold p-3 border-4 border-pink-300 rounded-xl focus:outline-none focus:border-pink-500" />
+                            </div>
+                            <span class="text-4xl font-bold text-gray-400 mt-8">-</span>
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="text-lg text-gray-500">芯語速率</span>
+                                <input type="number" id="sd2" class="w-20 md:w-24 text-center font-bold p-3 border-4 border-pink-300 rounded-xl focus:outline-none focus:border-pink-500" />
+                            </div>
+                            <span class="text-4xl font-bold text-gray-400 mt-8">=</span>
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="text-lg text-gray-500">每秒追回</span>
+                                <div class="flex items-end gap-2">
+                                    <input type="number" id="sdAns" class="w-20 md:w-24 text-center font-bold text-pink-600 p-3 border-4 border-pink-400 rounded-xl focus:outline-none focus:border-pink-600 bg-white shadow-inner" placeholder="?" />
+                                    <span class="mb-3 text-xl hidden md:inline">公尺/秒</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-lg text-pink-600 font-bold bg-pink-100 px-4 py-2 rounded-lg text-center mt-4">💡 提示：這代表哥哥每秒鐘可以追回這麼多的距離喔！</p>
+                    </div>
+
+                    <div class="mt-10 flex flex-col items-center gap-4">
+                        <p id="err2" class="hidden text-red-500 text-xl flex items-center gap-2 font-bold">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                            減法算錯囉，或者數字填反了！
+                        </p>
+                        <button onclick="checkStep2()" class="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-2xl flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-xl">
+                            檢查答案並進入下一關
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3 -->
+                <div id="step3" class="hidden animation-fade-in w-full">
+                    <h2 class="text-2xl md:text-3xl font-bold text-sky-700 mb-6 text-center">第三關：算出追上的時間 ⏱️</h2>
+                    <p class="text-gray-600 text-xl md:text-2xl mb-8 text-center leading-relaxed">芯語先偷跑了 <span class="font-bold text-blue-600 text-3xl">54</span> 公尺，哥哥每秒鐘可以追回 <span class="font-bold text-pink-600 text-3xl">2</span> 公尺。<br/>請問哥哥需要幾秒鐘才能把這 54 公尺追回來？</p>
+                    
+                    <div class="flex flex-col items-center gap-6 bg-green-50 p-6 md:p-10 rounded-2xl border-2 border-green-100 text-xl md:text-2xl font-medium">
+                        <div class="flex items-center gap-2 md:gap-4 w-full justify-center flex-wrap">
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="text-lg text-gray-500">落後距離</span>
+                                <input type="number" id="t1" class="w-24 text-center font-bold p-3 border-4 border-green-300 rounded-xl focus:outline-none focus:border-green-500" />
+                            </div>
+                            <span class="text-4xl font-bold text-gray-400 mt-8">÷</span>
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="text-lg text-gray-500">每秒追回</span>
+                                <input type="number" id="t2" class="w-24 text-center font-bold p-3 border-4 border-green-300 rounded-xl focus:outline-none focus:border-green-500" />
+                            </div>
+                            <span class="text-4xl font-bold text-gray-400 mt-8">=</span>
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="text-lg text-gray-500">需要時間</span>
+                                <div class="flex items-end gap-2">
+                                    <input type="number" id="tAns" class="w-28 text-center font-bold text-green-700 text-3xl p-3 border-4 border-green-500 rounded-xl focus:outline-none focus:border-green-700 bg-white shadow-inner" placeholder="?" />
+                                    <span class="mb-3 text-xl hidden md:inline">秒</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 flex flex-col items-center gap-4">
+                        <p id="err3" class="hidden text-red-500 text-xl flex items-center gap-2 font-bold">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                            算式或答案不對喔，想想看距離除以速度差等於什麼？
+                        </p>
+                        <button onclick="checkStep3()" class="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-2xl flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-xl">
+                            看解答與動畫！
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 4 -->
+                <div id="step4" class="hidden animation-fade-in w-full">
+                    <div class="bg-yellow-50 border-4 border-yellow-300 p-6 md:p-8 rounded-3xl text-center mb-8 shadow-lg">
+                        <div class="flex justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </div>
+                        <h2 class="text-3xl font-black text-yellow-800 mb-4">太棒了！完全正確！🎉</h2>
+                        <p class="text-xl md:text-2xl text-yellow-700 leading-relaxed mb-6">
+                            哥哥需要 <strong class="text-4xl text-red-600">27</strong> <strong>秒鐘</strong> 就可以追上芯語囉！<br/>
+                            <span class="text-lg text-gray-500 mt-2 block">(此時他們都跑到了距離起點 162 公尺的地方)</span>
+                        </p>
+                        
+                        <button id="btnPlay" onclick="startAnimation()" class="mt-4 bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-full font-bold text-xl flex items-center justify-center gap-3 mx-auto transition-transform hover:scale-105 shadow-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            播放追趕動畫
+                        </button>
+
+                        <button id="btnReplay" onclick="startAnimation()" class="hidden mt-4 bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-full font-bold text-xl flex items-center justify-center gap-3 mx-auto transition-transform hover:scale-105 shadow-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                            再看一次動畫
+                        </button>
+                    </div>
+
+                    <!-- Animation Track -->
+                    <div class="relative w-full h-48 md:h-56 bg-green-50 rounded-2xl border-4 border-green-200 overflow-hidden pt-10 md:pt-14 px-4 md:px-8 shadow-inner">
+                        <!-- Finish Line -->
+                        <div class="absolute top-0 bottom-0 w-1.5 bg-red-400 border-r-2 border-dashed border-white" style="left: 90%;">
+                            <div class="absolute -top-8 -left-8 md:-left-10 bg-red-100 text-red-600 text-sm font-bold px-3 py-1 rounded-full shadow-sm whitespace-nowrap">追上點(162m)</div>
+                        </div>
+
+                        <!-- Xinyu Track -->
+                        <div class="relative h-16 mb-6 border-b-4 border-gray-200">
+                            <div class="absolute -left-2 -top-4 text-sm md:text-lg font-bold text-pink-500">芯語 (4m/s)</div>
+                            <div class="absolute top-8 bottom-0 w-1 bg-pink-300" style="left: 30%;">
+                                <div class="absolute -bottom-6 -left-8 text-xs md:text-sm font-bold text-pink-500 whitespace-nowrap">起跑點(54m)</div>
+                            </div>
+                            <div id="xinyu-avatar" class="absolute top-4 w-10 h-10 md:w-12 md:h-12 bg-pink-500 rounded-full shadow-lg flex items-center justify-center text-white text-lg md:text-xl font-bold" style="left: calc(30% - 20px);">
+                                芯
+                            </div>
+                        </div>
+
+                        <!-- Brother Track -->
+                        <div class="relative h-16">
+                            <div class="absolute -left-2 -top-4 text-sm md:text-lg font-bold text-blue-500">哥哥 (6m/s)</div>
+                            <div class="absolute top-8 bottom-0 w-1 bg-blue-300" style="left: 0%;">
+                                <div class="absolute -bottom-6 -left-4 text-xs md:text-sm font-bold text-blue-500 whitespace-nowrap">起點(0m)</div>
+                            </div>
+                            <div id="brother-avatar" class="absolute top-4 w-10 h-10 md:w-12 md:h-12 bg-blue-500 rounded-full shadow-lg flex items-center justify-center text-white text-lg md:text-xl font-bold" style="left: calc(0% - 20px);">
+                                哥
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-center">
+                        <button onclick="resetGame()" class="text-gray-500 hover:text-gray-800 font-bold text-lg underline flex items-center gap-2 pb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                            重新挑戰一次
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
-  );
-}
+
+    <script>
+        // DOM Elements
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const step4 = document.getElementById('step4');
+        const progressBar = document.getElementById('progress-bar');
+        const xinyuAvatar = document.getElementById('xinyu-avatar');
+        const brotherAvatar = document.getElementById('brother-avatar');
+        
+        let isPlaying = false;
+        let animationFrame;
+
+        function setProgress(step) {
+            progressBar.style.width = (step / 4) * 100 + '%';
+        }
+
+        function checkStep1() {
+            const v1 = document.getElementById('xinyuSpeed').value;
+            const v2 = document.getElementById('brotherSpeed').value;
+            const v3 = document.getElementById('headStart').value;
+            
+            if (v1 === '4' && v2 === '6' && v3 === '54') {
+                document.getElementById('err1').classList.add('hidden');
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                setProgress(2);
+            } else {
+                document.getElementById('err1').classList.remove('hidden');
+            }
+        }
+
+        function checkStep2() {
+            const v1 = document.getElementById('sd1').value;
+            const v2 = document.getElementById('sd2').value;
+            const v3 = document.getElementById('sdAns').value;
+            
+            if (v1 === '6' && v2 === '4' && v3 === '2') {
+                document.getElementById('err2').classList.add('hidden');
+                step2.classList.add('hidden');
+                step3.classList.remove('hidden');
+                setProgress(3);
+            } else {
+                document.getElementById('err2').classList.remove('hidden');
+            }
+        }
+
+        function checkStep3() {
+            const v1 = document.getElementById('t1').value;
+            const v2 = document.getElementById('t2').value;
+            const v3 = document.getElementById('tAns').value;
+            
+            if (v1 === '54' && v2 === '2' && v3 === '27') {
+                document.getElementById('err3').classList.add('hidden');
+                step3.classList.add('hidden');
+                step4.classList.remove('hidden');
+                setProgress(4);
+            } else {
+                document.getElementById('err3').classList.remove('hidden');
+            }
+        }
+
+        function startAnimation() {
+            if (isPlaying) return;
+            isPlaying = true;
+            
+            document.getElementById('btnPlay').classList.add('hidden');
+            document.getElementById('btnReplay').classList.add('hidden');
+
+            let startTime = null;
+            const duration = 7000; // 7秒
+
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = timestamp - startTime;
+                const percentage = Math.min(progress / duration, 1);
+                
+                // 計算位置
+                xinyuAvatar.style.left = `calc(${30 + (percentage * 60)}% - 20px)`;
+                brotherAvatar.style.left = `calc(${0 + (percentage * 90)}% - 20px)`;
+
+                if (percentage < 1) {
+                    animationFrame = requestAnimationFrame(animate);
+                } else {
+                    isPlaying = false;
+                    document.getElementById('btnReplay').classList.remove('hidden');
+                }
+            }
+
+            // 重置位置
+            xinyuAvatar.style.left = `calc(30% - 20px)`;
+            brotherAvatar.style.left = `calc(0% - 20px)`;
+            
+            animationFrame = requestAnimationFrame(animate);
+        }
+
+        function resetGame() {
+            // 清空所有輸入框
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => input.value = '');
+            
+            // 隱藏錯誤訊息
+            document.getElementById('err1').classList.add('hidden');
+            document.getElementById('err2').classList.add('hidden');
+            document.getElementById('err3').classList.add('hidden');
+
+            // 重設按鈕
+            document.getElementById('btnPlay').classList.remove('hidden');
+            document.getElementById('btnReplay').classList.add('hidden');
+
+            // 停下可能正在跑的動畫並歸位
+            cancelAnimationFrame(animationFrame);
+            isPlaying = false;
+            xinyuAvatar.style.left = `calc(30% - 20px)`;
+            brotherAvatar.style.left = `calc(0% - 20px)`;
+
+            // 切換畫面
+            step4.classList.add('hidden');
+            step3.classList.add('hidden');
+            step2.classList.add('hidden');
+            step1.classList.remove('hidden');
+            
+            setProgress(1);
+        }
+    </script>
+</body>
+</html>
