@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>三角柱體積分解遊戲</title>
+  <title>三角柱體積與表面積分解遊戲</title>
   
   <!-- 引入 React 與 ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -27,63 +27,210 @@
     const IconAlertCircle = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
     const IconRefreshCcw = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>;
     const IconBox = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></svg>;
+    const IconCalculator = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>;
+    const IconX = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
 
-    // 定義題庫陣列，包含相減與相加的不同情境
+    // 獨立的浮動計算機組件
+    const FloatingCalculator = () => {
+      const [isOpen, setIsOpen] = useState(false);
+      const [displayValue, setDisplayValue] = useState('0');
+      const [previousValue, setPreviousValue] = useState(null);
+      const [operator, setOperator] = useState(null);
+      const [waitingForNewValue, setWaitingForNewValue] = useState(false);
+
+      const inputDigit = (digit) => {
+        if (waitingForNewValue) {
+          setDisplayValue(String(digit));
+          setWaitingForNewValue(false);
+        } else {
+          setDisplayValue(displayValue === '0' ? String(digit) : displayValue + digit);
+        }
+      };
+
+      const inputDot = () => {
+        if (waitingForNewValue) {
+          setDisplayValue('0.');
+          setWaitingForNewValue(false);
+        } else if (displayValue.indexOf('.') === -1) {
+          setDisplayValue(displayValue + '.');
+        }
+      };
+
+      const clearAll = () => {
+        setDisplayValue('0');
+        setPreviousValue(null);
+        setOperator(null);
+        setWaitingForNewValue(false);
+      };
+
+      const performOperation = (nextOperator) => {
+        const inputValue = parseFloat(displayValue);
+
+        // 【修正計算機Bug】：如果前一次按了 "=" (operator 為 null)，就要重新把當前數字當作新的起始值
+        if (previousValue == null || operator == null) {
+          setPreviousValue(inputValue);
+        } else if (operator) {
+          const currentValue = previousValue || 0;
+          let newValue = inputValue;
+          if (operator === '+') newValue = currentValue + inputValue;
+          else if (operator === '-') newValue = currentValue - inputValue;
+          else if (operator === '×') newValue = currentValue * inputValue;
+          else if (operator === '÷') newValue = currentValue / inputValue;
+
+          // 避免浮點數精度問題 (如 0.1 + 0.2)
+          newValue = Math.round(newValue * 1000000) / 1000000;
+          setPreviousValue(newValue);
+          setDisplayValue(String(newValue));
+        }
+
+        setWaitingForNewValue(true);
+        setOperator(nextOperator);
+      };
+
+      const handleEqual = () => {
+        performOperation(operator);
+        setOperator(null);
+      };
+
+      const btnClass = "p-3 md:p-4 text-xl font-bold rounded-xl active:scale-95 transition-transform shadow-sm";
+      const numClass = btnClass + " bg-white text-slate-800 hover:bg-slate-100";
+      const opClass = btnClass + " bg-amber-200 text-amber-900 hover:bg-amber-300";
+      const calcOpenClass = isOpen ? "translate-y-0 opacity-100 scale-100 pointer-events-auto" : "translate-y-10 opacity-0 scale-95 pointer-events-none";
+
+      return (
+        /* 加入 pointer-events-none 讓隱形的框框不會擋住後面的按鈕 */
+        <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 flex flex-col items-end pointer-events-none">
+          {/* 計算機面板 */}
+          <div className={"mb-4 w-72 bg-slate-50 p-4 rounded-3xl shadow-2xl border-4 border-amber-300 transition-all duration-300 origin-bottom-right " + calcOpenClass}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-amber-800 flex items-center gap-2"><IconCalculator className="w-5 h-5"/> 小幫手計算機</h3>
+              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-600"><IconX className="w-6 h-6"/></button>
+            </div>
+            
+            <div className="bg-white p-3 rounded-xl mb-4 text-right text-3xl font-mono text-slate-800 shadow-inner border-2 border-slate-100 overflow-x-auto">
+              {displayValue}
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              <button onClick={clearAll} className={"col-span-2 " + btnClass + " bg-red-100 text-red-600 hover:bg-red-200"}>清除 (C)</button>
+              <button onClick={() => performOperation('÷')} className={opClass}>÷</button>
+              <button onClick={() => performOperation('×')} className={opClass}>×</button>
+              
+              <button onClick={() => inputDigit(7)} className={numClass}>7</button>
+              <button onClick={() => inputDigit(8)} className={numClass}>8</button>
+              <button onClick={() => inputDigit(9)} className={numClass}>9</button>
+              <button onClick={() => performOperation('-')} className={opClass}>-</button>
+              
+              <button onClick={() => inputDigit(4)} className={numClass}>4</button>
+              <button onClick={() => inputDigit(5)} className={numClass}>5</button>
+              <button onClick={() => inputDigit(6)} className={numClass}>6</button>
+              <button onClick={() => performOperation('+')} className={opClass}>+</button>
+              
+              <button onClick={() => inputDigit(1)} className={numClass}>1</button>
+              <button onClick={() => inputDigit(2)} className={numClass}>2</button>
+              <button onClick={() => inputDigit(3)} className={numClass}>3</button>
+              <button onClick={handleEqual} className={"row-span-2 " + btnClass + " bg-amber-500 text-white hover:bg-amber-600"}>=</button>
+              
+              <button onClick={() => inputDigit(0)} className={"col-span-2 " + numClass}>0</button>
+              <button onClick={inputDot} className={numClass}>.</button>
+            </div>
+          </div>
+
+          {/* 右下角開關按鈕：加入 pointer-events-auto 讓按鈕可以被點擊 */}
+          <button 
+            onClick={() => setIsOpen(!isOpen)} 
+            className="w-16 h-16 bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-110 active:scale-95 border-4 border-white pointer-events-auto"
+            title="打開計算機"
+          >
+            {isOpen ? <IconX className="w-8 h-8"/> : <IconCalculator className="w-8 h-8"/>}
+          </button>
+        </div>
+      );
+    };
+
+    // 定義題庫陣列，包含體積相減、相加與表面積展開的不同情境
     const questions = [
       {
         id: 1,
-        type: 'subtract',
+        type: 'volume_subtract',
         title: "無蓋三角柱筆筒",
         desc: "右圖是一個由木頭做成的無蓋三角柱筆筒。",
+        questionText: "請問這個木頭部分的體積是幾立方公分？",
         p1Area: 48, p1Height: 14, p1Vol: 672,
         p2Area: 36, p2Height: 12, p2Vol: 432,
         finalVol: 240,
         material: "木頭部分",
-        svgType: 'prism',
-        part1Name: "外圍大實心三角柱",
-        part2Name: "內部空心小三角柱",
-        p1Label: "大體積", p2Label: "小體積",
+        part1Name: "外圍大實心三角柱", part2Name: "內部空心小三角柱",
+        p1Labels: ["底面積", "柱高", "大體積"], p2Labels: ["底面積", "柱高", "小體積"],
         opSymbol: "－",
         step3Desc: "大實心體積 扣掉 挖空體積，就是答案！",
-        unit: "立方公分"
+        unit: "立方公分",
+        imageCombined: "pic/1.png",
+        imagePart1: "pic/1_1.png",
+        imagePart2: "pic/1_2.png"
       },
       {
         id: 2,
-        type: 'add',
+        type: 'volume_add',
         title: "三角柱與長方體組合",
         desc: "下圖是由上方「三角柱」和下方「長方體」組合而成的形體。正面長方體寬16公尺、高10公尺；上方三角形高12公尺。整體的柱高(深)為30公尺。",
-        p1Area: 160, p1Height: 30, p1Vol: 4800, // 長方體: 16*10 = 160
-        p2Area: 96, p2Height: 30, p2Vol: 2880,  // 三角柱: 16*12/2 = 96
+        questionText: "請問這個組合形體的體積是幾立方公尺？",
+        p1Area: 160, p1Height: 30, p1Vol: 4800,
+        p2Area: 96, p2Height: 30, p2Vol: 2880,
         finalVol: 7680,
         material: "組合形體",
-        svgType: 'house',
-        part1Name: "下方的長方體",
-        part2Name: "上方的三角柱",
-        p1Label: "長方體體積", p2Label: "三角柱體積",
+        part1Name: "下方的長方體", part2Name: "上方的三角柱",
+        p1Labels: ["底面積", "柱高", "長方體體積"], p2Labels: ["底面積", "柱高", "三角柱體積"],
         opSymbol: "＋",
         step3Desc: "把長方體與三角柱的體積 加起來，就是總體積！",
         hint1: "長方形底面積 = 16 × 10 = 160",
         hint2: "三角形底面積 = 16 × 12 ÷ 2 = 96",
-        unit: "立方公尺"
+        unit: "立方公尺",
+        imageCombined: "pic/2.png",
+        imagePart1: "pic/2_1.png",
+        imagePart2: "pic/2_2.png"
       },
       {
         id: 3,
-        type: 'add',
+        type: 'volume_add',
         title: "長方體與半圓柱組合",
         desc: "下圖是由左側「長方體」和右側「半圓柱」組合而成的形體。長方體上底面長16公尺、寬(深)8公尺，柱高為5公尺。右側連接一個半圓。(圓周率以3.14計算)",
-        p1Area: 128, p1Height: 5, p1Vol: 640,   // 長方體: 16*8 = 128
-        p2Area: 25.12, p2Height: 5, p2Vol: 125.6, // 半圓柱: 4*4*3.14/2 = 25.12
+        questionText: "請問這個組合形體的體積是幾立方公尺？",
+        p1Area: 128, p1Height: 5, p1Vol: 640,
+        p2Area: 25.12, p2Height: 5, p2Vol: 125.6,
         finalVol: 765.6,
         material: "組合形體",
-        svgType: 'roundrect',
-        part1Name: "左側的長方體",
-        part2Name: "右側的半圓柱",
-        p1Label: "長方體體積", p2Label: "半圓柱體積",
+        part1Name: "左側的長方體", part2Name: "右側的半圓柱",
+        p1Labels: ["底面積", "柱高", "長方體體積"], p2Labels: ["底面積", "柱高", "半圓柱體積"],
         opSymbol: "＋",
         step3Desc: "把兩個部分的體積 加起來，就是總體積！",
         hint1: "長方形底面積 = 16 × 8 = 128",
         hint2: "半圓形底面積 = 4 × 4 × 3.14 ÷ 2 = 25.12",
-        unit: "立方公尺"
+        unit: "立方公尺",
+        imageCombined: "pic/3.png",
+        imagePart1: "pic/3_1.png",
+        imagePart2: "pic/3_2.png"
+      },
+      {
+        id: 4,
+        type: 'surface_area',
+        title: "三角柱的表面積",
+        desc: "右圖是一個三角柱。請觀察它的三個邊長與柱高，算出展開後的表面積！",
+        questionText: "請問它的表面積是幾平方公分？",
+        p1Area: 6, p1Height: 2, p1Vol: 12, 
+        p2Area: 12, p2Height: 6, p2Vol: 72, 
+        finalVol: 84,
+        material: "三角柱表面",
+        part1Name: "上下兩個底面積", part2Name: "側面積 (三個側面展開)",
+        p1Labels: ["單面面積", "數量(個)", "兩底面和"], p2Labels: ["底面周長", "柱高", "側面積"],
+        opSymbol: "＋",
+        step3Desc: "把「兩個底面積」與「側面積」加起來，就是總表面積！",
+        hint1: "直角三角形面積 = 4 × 3 ÷ 2 = 6。有上下兩個喔！",
+        hint2: "側面積展開是一個大長方形，長是底面的周長 (3+4+5=12)，寬是柱高 (6)。",
+        unit: "平方公分",
+        imageCombined: "pic/4.png",
+        imagePart1: "pic/4_1.png",
+        imagePart2: "pic/4_2.png"
       }
     ];
 
@@ -126,7 +273,7 @@
         if (Number(p1Area) === q.p1Area && Number(p1Height) === q.p1Height && Number(p1Vol) === q.p1Vol) {
           setErrorMsg(""); setStep(2);
         } else {
-          setErrorMsg(`數字不太對喔！請檢查「${q.part1Name}」的數字，體積 = 底面積 × 柱高`);
+          setErrorMsg(`數字不太對喔！請檢查「${q.part1Name}」的數字。算式：${q.p1Labels[0]} × ${q.p1Labels[1]} = ${q.p1Labels[2]}`);
         }
       };
 
@@ -134,7 +281,7 @@
         if (Number(p2Area) === q.p2Area && Number(p2Height) === q.p2Height && Number(p2Vol) === q.p2Vol) {
           setErrorMsg(""); setStep(3);
         } else {
-          setErrorMsg(`數字有錯喔！請檢查「${q.part2Name}」的數字，體積 = 底面積 × 柱高`);
+          setErrorMsg(`數字有錯喔！請檢查「${q.part2Name}」的數字。算式：${q.p2Labels[0]} × ${q.p2Labels[1]} = ${q.p2Labels[2]}`);
         }
       };
 
@@ -146,147 +293,32 @@
         }
       };
 
-      // 負責繪製不同題型的 SVG 組件
-      const DynamicSVG = ({ svgType, type }) => {
-        if (svgType === 'prism') {
-          const outerTop = "20,60 180,60 100,20";
-          const outerFront = "20,60 180,60 180,200 20,200";
-          const innerTop = "40,60 160,60 100,30";
-          const innerFront = "40,60 160,60 160,180 40,180";
-          if (type === 'combined') {
-            return (
-              <svg viewBox="0 0 200 220" className="w-48 h-48 drop-shadow-xl">
-                <polygon points={outerFront} fill="#d4a373" stroke="#bc6c25" strokeWidth="2" />
-                <polygon points={outerTop} fill="#faedcd" stroke="#bc6c25" strokeWidth="2" />
-                <polygon points={innerTop} fill="#5c4033" stroke="#283618" strokeWidth="1" opacity="0.8" />
-                <polygon points={innerFront} fill="none" stroke="#5c4033" strokeWidth="2" strokeDasharray="5,5" opacity="0.6" />
-              </svg>
-            );
-          }
-          if (type === 'part1') {
-            return (
-              <div className="relative">
-                <svg viewBox="0 0 200 220" className="w-48 h-48 drop-shadow-lg">
-                  <polygon points={outerFront} fill="#d4a373" stroke="#bc6c25" strokeWidth="2" />
-                  <polygon points={outerTop} fill="#faedcd" stroke="#bc6c25" strokeWidth="2" />
-                </svg>
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-amber-100 px-2 rounded text-xs font-bold text-amber-800">底面積 {q.p1Area}</div>
-                <div className="absolute bottom-1/2 left-0 -translate-x-4 bg-amber-100 px-2 rounded text-xs font-bold text-amber-800">高 {q.p1Height}</div>
-              </div>
-            );
-          }
-          if (type === 'part2') {
-            return (
-              <div className="relative">
-                <svg viewBox="0 0 200 220" className="w-48 h-48 drop-shadow-lg opacity-80">
-                  <polygon points={innerFront} fill="#caf0f8" stroke="#0077b6" strokeWidth="2" />
-                  <polygon points={innerTop} fill="#90e0ef" stroke="#0077b6" strokeWidth="2" />
-                </svg>
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-blue-100 px-2 rounded text-xs font-bold text-blue-800">底面積 {q.p2Area}</div>
-                <div className="absolute bottom-1/2 right-4 translate-x-4 bg-blue-100 px-2 rounded text-xs font-bold text-blue-800">高 {q.p2Height}</div>
-              </div>
-            );
-          }
-        }
-        
-        if (svgType === 'house') {
-          const rectFront = "30,140 110,140 110,190 30,190";
-          const rectTop = "30,140 90,100 170,100 110,140";
-          const rectRight = "110,140 170,100 170,150 110,190";
-          const triFront = "30,140 110,140 30,80";
-          const triRoof = "30,80 90,40 170,100 110,140";
-          if (type === 'combined') {
-            return (
-              <svg viewBox="0 0 200 220" className="w-48 h-48 drop-shadow-xl">
-                 <polygon points={rectFront} fill="#f8c471" stroke="#d68910" strokeWidth="2" />
-                 <polygon points={rectRight} fill="#e59866" stroke="#d68910" strokeWidth="2" />
-                 <polygon points={triFront} fill="#fad7a1" stroke="#d68910" strokeWidth="2" />
-                 <polygon points={triRoof} fill="#fdebd0" stroke="#d68910" strokeWidth="2" />
-                 <line x1="30" y1="140" x2="110" y2="140" stroke="#d68910" strokeWidth="2" strokeDasharray="3,3" />
-                 <line x1="110" y1="140" x2="170" y2="100" stroke="#d68910" strokeWidth="2" strokeDasharray="3,3" />
-              </svg>
-            );
-          }
-          if (type === 'part1') {
-            return (
-              <div className="relative">
-                <svg viewBox="0 0 200 220" className="w-48 h-48 drop-shadow-lg">
-                  <polygon points={rectFront} fill="#f8c471" stroke="#d68910" strokeWidth="2" />
-                  <polygon points={rectTop} fill="#fdebd0" stroke="#d68910" strokeWidth="2" />
-                  <polygon points={rectRight} fill="#e59866" stroke="#d68910" strokeWidth="2" />
-                </svg>
-                 <div className="absolute top-[45%] left-1/3 bg-amber-100 px-2 rounded text-xs font-bold text-amber-800">底面積 {q.p1Area}</div>
-                 <div className="absolute bottom-6 right-2 bg-amber-100 px-2 rounded text-xs font-bold text-amber-800">高 {q.p1Height}</div>
-              </div>
-            );
-          }
-          if (type === 'part2') {
-            return (
-              <div className="relative">
-                <svg viewBox="0 0 200 220" className="w-48 h-48 drop-shadow-lg">
-                  <polygon points={triFront} fill="#fad7a1" stroke="#d68910" strokeWidth="2" />
-                  <polygon points={triRoof} fill="#fdebd0" stroke="#d68910" strokeWidth="2" />
-                  <polygon points="30,80 110,140 170,100 90,40" fill="none" stroke="#d68910" strokeWidth="2" opacity="0.4"/>
-                </svg>
-                 <div className="absolute top-[35%] left-1/3 bg-blue-100 px-2 rounded text-xs font-bold text-blue-800">底面積 {q.p2Area}</div>
-                 <div className="absolute bottom-[40%] right-2 bg-blue-100 px-2 rounded text-xs font-bold text-blue-800">高 {q.p2Height}</div>
-              </div>
-            );
-          }
-        }
+      // 負責顯示題目的圖片組件
+      const QuestionImage = ({ type }) => {
+        let src = q.imageCombined;
+        // 如果有設定分解圖就用分解圖，如果沒有找到（或沒上傳），就會預設 fallback 顯示原圖
+        if (type === 'part1') src = q.imagePart1 || q.imageCombined;
+        if (type === 'part2') src = q.imagePart2 || q.imageCombined;
 
-        if (svgType === 'roundrect') {
-          const rectFront = "10,130 138,130 138,170 10,170";
-          const rectTop = "10,130 50,100 178,100 138,130";
-          const arcTop = "M 178,100 A 30,20 0 0,1 138,130";
-          const arcBottom = "M 178,140 A 30,20 0 0,1 138,170";
-          const sideCurve = "M 178,100 A 30,20 0 0,1 138,130 L 138,170 A 30,20 0 0,0 178,140 Z";
-
-          if (type === 'combined') {
-            return (
-              <svg viewBox="0 0 200 220" className="w-48 h-48 drop-shadow-xl">
-                 <polygon points={rectFront} fill="#d7bde2" stroke="#8e44ad" strokeWidth="2" />
-                 <polygon points={rectTop} fill="#ebdef0" stroke="#8e44ad" strokeWidth="2" />
-                 <path d={arcTop} fill="#ebdef0" stroke="#8e44ad" strokeWidth="2" />
-                 <path d={sideCurve} fill="#c39bd3" stroke="#8e44ad" strokeWidth="2" />
-                 <line x1="138" y1="130" x2="138" y2="170" stroke="#8e44ad" strokeWidth="2" strokeDasharray="3,3" opacity="0.6" />
-                 <line x1="138" y1="130" x2="178" y2="100" stroke="#8e44ad" strokeWidth="2" strokeDasharray="3,3" opacity="0.6" />
-              </svg>
-            );
-          }
-          if (type === 'part1') {
-            return (
-              <div className="relative">
-                <svg viewBox="0 0 200 220" className="w-48 h-48 drop-shadow-lg">
-                   <polygon points={rectFront} fill="#d7bde2" stroke="#8e44ad" strokeWidth="2" />
-                   <polygon points={rectTop} fill="#ebdef0" stroke="#8e44ad" strokeWidth="2" />
-                   <polygon points="138,130 178,100 178,140 138,170" fill="#c39bd3" stroke="#8e44ad" strokeWidth="2" />
-                </svg>
-                <div className="absolute top-[45%] left-1/3 bg-amber-100 px-2 rounded text-xs font-bold text-amber-800">底面積 {q.p1Area}</div>
-                <div className="absolute bottom-6 left-4 bg-amber-100 px-2 rounded text-xs font-bold text-amber-800">高 {q.p1Height}</div>
-              </div>
-            );
-          }
-          if (type === 'part2') {
-            return (
-              <div className="relative">
-                <svg viewBox="0 0 200 220" className="w-48 h-48 drop-shadow-lg">
-                   <path d={arcTop} fill="#ebdef0" stroke="#8e44ad" strokeWidth="2" />
-                   <path d={sideCurve} fill="#c39bd3" stroke="#8e44ad" strokeWidth="2" />
-                   <line x1="138" y1="130" x2="178" y2="100" stroke="#8e44ad" strokeWidth="2" strokeDasharray="4,4" />
-                   <line x1="138" y1="130" x2="138" y2="170" stroke="#8e44ad" strokeWidth="2" strokeDasharray="4,4" />
-                </svg>
-                <div className="absolute top-1/2 right-4 bg-blue-100 px-2 rounded text-xs font-bold text-blue-800">底面積 {q.p2Area}</div>
-                <div className="absolute bottom-6 right-1/4 bg-blue-100 px-2 rounded text-xs font-bold text-blue-800">高 {q.p2Height}</div>
-              </div>
-            );
-          }
-        }
-        return null;
+        return (
+          <div className="relative flex justify-center items-center my-4">
+            <img
+              src={src}
+              alt={q.title}
+              className="max-w-full max-h-48 md:max-h-64 object-contain drop-shadow-md rounded-xl"
+              onError={(e) => {
+                // 如果圖片載入失敗，顯示一個友善的提示框，告訴老師缺了哪張圖
+                e.target.onerror = null;
+                e.target.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'><rect width='300' height='200' fill='%23f1f5f9' rx='10'/><text x='50%' y='45%' dominant-baseline='middle' text-anchor='middle' font-size='18' font-weight='bold' fill='%2364748b'>尚未上傳圖片</text><text x='50%' y='60%' dominant-baseline='middle' text-anchor='middle' font-size='14' fill='%2394a3b8'>請將圖檔放在: " + src + "</text></svg>";
+              }}
+            />
+          </div>
+        );
       };
 
       return (
-        <div className="min-h-screen bg-[#fefae0] p-4 md:p-8 font-sans text-slate-800">
+        /* 外層加上 pb-28 與 md:pb-32，讓最底下多出空白，不會被計算機擋住 */
+        <div className="min-h-screen bg-[#fefae0] p-4 pb-28 md:p-8 md:pb-32 font-sans text-slate-800">
           <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-amber-200">
             
             <div className="bg-amber-100 p-6 border-b-4 border-amber-200">
@@ -301,7 +333,7 @@
               </h1>
               <div className="bg-white p-4 rounded-xl shadow-inner text-lg leading-relaxed text-slate-700">
                 <p>{q.desc}</p>
-                <p className="mt-2 font-bold text-red-600">請問這個{q.material}的體積是幾{q.unit}？</p>
+                <p className="mt-2 font-bold text-red-600">{q.questionText}</p>
               </div>
             </div>
 
@@ -320,9 +352,10 @@
                 </div>
               )}
 
+              {/* 步驟 0：顯示原圖 */}
               {step === 0 && (
                 <div className="flex flex-col items-center animate-fade-in w-full h-full justify-center mt-8">
-                  <DynamicSVG svgType={q.svgType} type="combined" />
+                  <QuestionImage type="combined" />
                   <p className="mt-8 text-slate-600 font-bold text-xl bg-white px-6 py-2 rounded-full shadow-sm">這是一個{q.material}</p>
                   <button onClick={() => setStep(1)} className="mt-10 px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white text-2xl font-bold rounded-2xl shadow-xl transform transition hover:scale-105 flex items-center gap-3">
                     開始闖關：分解圖形！ <IconArrowRight className="w-8 h-8" />
@@ -330,20 +363,21 @@
                 </div>
               )}
 
+              {/* 步驟 1：計算 第一部分 (底面積或大體積) */}
               {step === 1 && (
                 <div className="flex flex-col items-center w-full max-w-3xl animate-fade-in mt-4">
                   <h2 className="text-xl md:text-2xl font-bold text-amber-900 mb-6 flex items-center gap-3 bg-amber-100 px-6 py-3 rounded-2xl w-full justify-center text-center">
                     <span className="bg-amber-500 text-white w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0">1</span>
-                    先計算「{q.part1Name}」的體積
+                    先計算「{q.part1Name}」
                   </h2>
-                  <div className="transform scale-125 my-8"><DynamicSVG svgType={q.svgType} type="part1" /></div>
+                  <div className="transform scale-125 my-8"><QuestionImage type="part1" /></div>
                   <div className="w-full mt-8 p-6 md:p-8 rounded-3xl border-4 border-amber-300 bg-white shadow-xl">
-                    <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 text-2xl md:text-3xl font-bold text-amber-900">
-                      <input type="number" value={p1Area} onChange={e => setP1Area(e.target.value)} className="w-28 md:w-32 text-center p-3 md:p-4 border-4 rounded-2xl border-amber-200 focus:outline-none focus:border-amber-500 bg-amber-50" placeholder="底面積" />
+                    <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 text-xl md:text-3xl font-bold text-amber-900">
+                      <input type="number" value={p1Area} onChange={e => setP1Area(e.target.value)} className="w-28 md:w-32 text-center p-3 md:p-4 border-4 rounded-2xl border-amber-200 focus:outline-none focus:border-amber-500 bg-amber-50 text-2xl" placeholder={q.p1Labels[0]} />
                       <span>×</span>
-                      <input type="number" value={p1Height} onChange={e => setP1Height(e.target.value)} className="w-24 md:w-28 text-center p-3 md:p-4 border-4 rounded-2xl border-amber-200 focus:outline-none focus:border-amber-500 bg-amber-50" placeholder="高" />
+                      <input type="number" value={p1Height} onChange={e => setP1Height(e.target.value)} className="w-24 md:w-28 text-center p-3 md:p-4 border-4 rounded-2xl border-amber-200 focus:outline-none focus:border-amber-500 bg-amber-50 text-2xl" placeholder={q.p1Labels[1]} />
                       <span>=</span>
-                      <input type="number" value={p1Vol} onChange={e => setP1Vol(e.target.value)} className="w-32 md:w-40 text-center p-3 md:p-4 border-4 rounded-2xl border-amber-200 focus:outline-none focus:border-amber-500 bg-amber-50" placeholder={q.p1Label} />
+                      <input type="number" value={p1Vol} onChange={e => setP1Vol(e.target.value)} className="w-32 md:w-40 text-center p-3 md:p-4 border-4 rounded-2xl border-amber-200 focus:outline-none focus:border-amber-500 bg-amber-50 text-2xl" placeholder={q.p1Labels[2]} />
                     </div>
                     {q.hint1 && <p className="text-base text-slate-500 w-full text-center mt-4">💡 提示：{q.hint1}</p>}
                     <div className="mt-8 flex justify-center md:justify-end">
@@ -355,20 +389,21 @@
                 </div>
               )}
 
+              {/* 步驟 2：計算 第二部分 (挖空體積或側面積) */}
               {step === 2 && (
                 <div className="flex flex-col items-center w-full max-w-3xl animate-fade-in mt-4">
                   <h2 className="text-xl md:text-2xl font-bold text-blue-900 mb-6 flex items-center gap-3 bg-blue-100 px-6 py-3 rounded-2xl w-full justify-center text-center">
                     <span className="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0">2</span>
-                    接著計算「{q.part2Name}」的體積
+                    接著計算「{q.part2Name}」
                   </h2>
-                  <div className="transform scale-125 my-8"><DynamicSVG svgType={q.svgType} type="part2" /></div>
+                  <div className="transform scale-125 my-8"><QuestionImage type="part2" /></div>
                   <div className="w-full mt-8 p-6 md:p-8 rounded-3xl border-4 border-blue-300 bg-white shadow-xl">
-                    <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 text-2xl md:text-3xl font-bold text-blue-900">
-                      <input type="number" value={p2Area} onChange={e => setP2Area(e.target.value)} className="w-28 md:w-32 text-center p-3 md:p-4 border-4 rounded-2xl border-blue-200 focus:outline-none focus:border-blue-500 bg-blue-50" placeholder="底面積" />
+                    <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 text-xl md:text-3xl font-bold text-blue-900">
+                      <input type="number" value={p2Area} onChange={e => setP2Area(e.target.value)} className="w-28 md:w-32 text-center p-3 md:p-4 border-4 rounded-2xl border-blue-200 focus:outline-none focus:border-blue-500 bg-blue-50 text-2xl" placeholder={q.p2Labels[0]} />
                       <span>×</span>
-                      <input type="number" value={p2Height} onChange={e => setP2Height(e.target.value)} className="w-24 md:w-28 text-center p-3 md:p-4 border-4 rounded-2xl border-blue-200 focus:outline-none focus:border-blue-500 bg-blue-50" placeholder="高" />
+                      <input type="number" value={p2Height} onChange={e => setP2Height(e.target.value)} className="w-24 md:w-28 text-center p-3 md:p-4 border-4 rounded-2xl border-blue-200 focus:outline-none focus:border-blue-500 bg-blue-50 text-2xl" placeholder={q.p2Labels[1]} />
                       <span>=</span>
-                      <input type="number" value={p2Vol} onChange={e => setP2Vol(e.target.value)} className="w-32 md:w-40 text-center p-3 md:p-4 border-4 rounded-2xl border-blue-200 focus:outline-none focus:border-blue-500 bg-blue-50" placeholder={q.p2Label} />
+                      <input type="number" value={p2Vol} onChange={e => setP2Vol(e.target.value)} className="w-32 md:w-40 text-center p-3 md:p-4 border-4 rounded-2xl border-blue-200 focus:outline-none focus:border-blue-500 bg-blue-50 text-2xl" placeholder={q.p2Labels[2]} />
                     </div>
                     {q.hint2 && <p className="text-base text-slate-500 w-full text-center mt-4">💡 提示：{q.hint2}</p>}
                     <div className="mt-8 flex justify-center md:justify-end">
@@ -380,6 +415,7 @@
                 </div>
               )}
 
+              {/* 步驟 3：總合或相減 */}
               {step === 3 && (
                 <div className="flex flex-col items-center w-full max-w-4xl animate-fade-in mt-4">
                   <h2 className="text-xl md:text-2xl font-bold text-green-900 mb-6 flex items-center gap-3 bg-green-100 px-6 py-3 rounded-2xl w-full justify-center text-center">
@@ -388,22 +424,22 @@
                   </h2>
                   <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 my-4 bg-white p-6 rounded-3xl shadow-sm w-full">
                     <div className="flex flex-col items-center">
-                      <div className="transform scale-75 md:scale-90"><DynamicSVG svgType={q.svgType} type="part1" /></div>
-                      <span className="mt-2 font-bold text-amber-700 text-xl">{q.p1Label}: {q.p1Vol}</span>
+                      <div className="transform scale-75 md:scale-90"><QuestionImage type="part1" /></div>
+                      <span className="mt-2 font-bold text-amber-700 text-xl">{q.p1Labels[2]}: {q.p1Vol}</span>
                     </div>
                     <span className="text-4xl md:text-6xl font-black text-slate-300 my-4 md:my-0">{q.opSymbol}</span>
                     <div className="flex flex-col items-center">
-                      <div className="transform scale-75 md:scale-90"><DynamicSVG svgType={q.svgType} type="part2" /></div>
-                      <span className="mt-2 font-bold text-blue-700 text-xl">{q.p2Label}: {q.p2Vol}</span>
+                      <div className="transform scale-75 md:scale-90"><QuestionImage type="part2" /></div>
+                      <span className="mt-2 font-bold text-blue-700 text-xl">{q.p2Labels[2]}: {q.p2Vol}</span>
                     </div>
                   </div>
                   <div className="w-full mt-4 p-6 md:p-8 rounded-3xl border-4 border-green-300 bg-white shadow-xl">
-                    <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 text-2xl md:text-3xl font-bold text-green-900">
-                      <input type="number" value={finalP1} onChange={e => setFinalP1(e.target.value)} className="w-32 md:w-40 text-center p-3 md:p-4 border-4 rounded-2xl border-green-200 focus:outline-none focus:border-green-500 bg-green-50" placeholder={q.p1Label} />
+                    <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 text-xl md:text-3xl font-bold text-green-900">
+                      <input type="number" value={finalP1} onChange={e => setFinalP1(e.target.value)} className="w-32 md:w-40 text-center p-3 md:p-4 border-4 rounded-2xl border-green-200 focus:outline-none focus:border-green-500 bg-green-50 text-2xl" placeholder={q.p1Labels[2]} />
                       <span>{q.opSymbol}</span>
-                      <input type="number" value={finalP2} onChange={e => setFinalP2(e.target.value)} className="w-32 md:w-40 text-center p-3 md:p-4 border-4 rounded-2xl border-green-200 focus:outline-none focus:border-green-500 bg-green-50" placeholder={q.p2Label} />
+                      <input type="number" value={finalP2} onChange={e => setFinalP2(e.target.value)} className="w-32 md:w-40 text-center p-3 md:p-4 border-4 rounded-2xl border-green-200 focus:outline-none focus:border-green-500 bg-green-50 text-2xl" placeholder={q.p2Labels[2]} />
                       <span>=</span>
-                      <input type="number" value={finalVol} onChange={e => setFinalVol(e.target.value)} className="w-32 md:w-40 text-center p-3 md:p-4 border-4 rounded-2xl border-green-400 focus:outline-none focus:border-green-600 bg-yellow-100 text-red-600" placeholder="總體積" />
+                      <input type="number" value={finalVol} onChange={e => setFinalVol(e.target.value)} className="w-32 md:w-40 text-center p-3 md:p-4 border-4 rounded-2xl border-green-400 focus:outline-none focus:border-green-600 bg-yellow-100 text-red-600 text-2xl" placeholder="總答案" />
                     </div>
                     <div className="mt-8 flex justify-center">
                       <button onClick={handleCheckFinal} className="px-10 py-4 bg-green-500 text-white rounded-full hover:bg-green-600 transition text-2xl font-bold shadow-2xl flex items-center gap-3 transform hover:scale-105 w-full md:w-auto justify-center">
@@ -414,20 +450,21 @@
                 </div>
               )}
 
+              {/* 步驟 4：過關結算畫面 */}
               {step === 4 && (
                 <div className="flex flex-col items-center w-full max-w-3xl animate-fade-in mt-8 p-6 md:p-10 bg-gradient-to-br from-yellow-100 to-amber-200 rounded-3xl border-8 border-yellow-400 shadow-2xl">
                   <h2 className="text-3xl md:text-5xl font-black text-amber-800 mb-6 drop-shadow-sm text-center">🎉 恭喜本題闖關成功！ 🎉</h2>
                   <div className="bg-white p-6 md:p-8 rounded-2xl shadow-inner w-full text-center">
-                    <p className="text-xl md:text-2xl text-amber-900 mb-4 font-bold">{q.material}的總體積是</p>
+                    <p className="text-xl md:text-2xl text-amber-900 mb-4 font-bold">{q.material}的答案是</p>
                     <div className="text-5xl md:text-6xl text-red-600 font-black mb-6 bg-red-50 py-4 rounded-xl border-2 border-red-100 flex justify-center items-end gap-2">
                       {q.finalVol} <span className="text-2xl text-red-400 mb-1">{q.unit}</span>
                     </div>
                     <div className="text-left text-base md:text-lg font-bold text-slate-700 space-y-3 bg-slate-50 p-4 md:p-6 rounded-xl">
-                      <p className="text-amber-700 flex justify-between"><span>1. {q.p1Label}：</span> <span>{q.p1Area} × {q.p1Height} = {q.p1Vol}</span></p>
-                      <p className="text-blue-700 flex justify-between"><span>2. {q.p2Label}：</span> <span>{q.p2Area} × {q.p2Height} = {q.p2Vol}</span></p>
+                      <p className="text-amber-700 flex justify-between"><span>1. {q.p1Labels[2]}：</span> <span>{q.p1Area} × {q.p1Height} = {q.p1Vol}</span></p>
+                      <p className="text-blue-700 flex justify-between"><span>2. {q.p2Labels[2]}：</span> <span>{q.p2Area} × {q.p2Height} = {q.p2Vol}</span></p>
                       <div className="h-px bg-slate-300 my-2"></div>
                       <p className="text-green-700 flex justify-between text-lg md:text-xl">
-                        <span>3. 實際總體積：</span> 
+                        <span>3. 總計答案：</span> 
                         <span>{q.p1Vol} {q.opSymbol} {q.p2Vol} = {q.finalVol}</span>
                       </p>
                     </div>
@@ -445,6 +482,9 @@
 
             </div>
           </div>
+
+          {/* 插入浮動計算機組件 */}
+          <FloatingCalculator />
 
           <style>
             {`
