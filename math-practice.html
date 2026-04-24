@@ -124,31 +124,66 @@
       const [isDrawing, setIsDrawing] = useState(false);
       const [tool, setTool] = useState('pen'); // 'pen' or 'eraser'
 
-      // 設定 Canvas 尺寸
+      // 設定 Canvas 尺寸 (加入 ResizeObserver 處理變形與偏移問題)
       useEffect(() => {
         const canvas = canvasRef.current;
         const parent = canvas.parentElement;
-        canvas.width = parent.clientWidth;
-        canvas.height = parent.clientHeight;
-        
-        // 為了讓畫出來的線條平滑
         const ctx = canvas.getContext('2d');
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+
+        const resizeCanvas = () => {
+          // 儲存目前的畫布內容，避免縮放時清空
+          let tempCanvas = null;
+          if (canvas.width > 0 && canvas.height > 0) {
+            tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            tempCanvas.getContext('2d').drawImage(canvas, 0, 0);
+          }
+
+          // 重新設定為實際的顯示大小
+          canvas.width = parent.clientWidth;
+          canvas.height = parent.clientHeight;
+          
+          // 恢復畫筆設定
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+
+          // 畫回原本的內容
+          if (tempCanvas) {
+            ctx.drawImage(tempCanvas, 0, 0);
+          }
+        };
+
+        // 監聽父層容器大小變化
+        const observer = new ResizeObserver(resizeCanvas);
+        observer.observe(parent);
+
+        // 初始化時先設定一次
+        resizeCanvas();
+
+        return () => observer.disconnect();
       }, []);
 
       const getCoordinates = (e) => {
         const canvas = canvasRef.current;
         const rect = canvas.getBoundingClientRect();
+        
+        // 確保內部解析度與 CSS 顯示大小的比例正確
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        let clientX, clientY;
         if (e.touches && e.touches.length > 0) {
-          return {
-            x: e.touches[0].clientX - rect.left,
-            y: e.touches[0].clientY - rect.top
-          };
+          clientX = e.touches[0].clientX;
+          clientY = e.touches[0].clientY;
+        } else {
+          clientX = e.clientX;
+          clientY = e.clientY;
         }
+
         return {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
         };
       };
 
